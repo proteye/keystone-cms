@@ -1,6 +1,6 @@
-# Keystone Project Starter
+# Keystone CMS
 
-Welcome to Keystone!
+CMS for article sites based on Keystone.
 
 Run
 

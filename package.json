@@ -1,7 +1,14 @@
 {
-  "name": "keystone-app",
+  "name": "keystone-cms",
   "version": "1.0.1",
+  "description": "CMS for article sites based on Keystone",
   "private": true,
+  "author": "Ramil Zaynetdinov <me@proteye.ru>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/proteye/keystone-cms.git"
+  },
   "scripts": {
     "dev": "keystone dev",
     "start": "keystone start",
