@@ -22,12 +22,27 @@ export default withAuth(
     // the db sets the database provider - we're using sqlite for the fastest startup experience
     db: {
       provider: 'sqlite',
-      url: `file:./${mainConfig.dbName}`,
+      url: mainConfig.dbUrl,
     },
     // This config allows us to set up features of the Admin UI https://keystonejs.com/docs/apis/config#ui
     ui: {
       // For our starter, we check that someone has session data before letting them see the Admin UI.
       isAccessAllowed: (context) => !!context.session?.data,
+    },
+    storage: {
+      [mainConfig.localStorageName]: {
+        // Images that use this store will be stored on the local machine
+        kind: 'local',
+        // This store is used for the image field type
+        type: 'image',
+        // The URL that is returned in the Keystone GraphQL API
+        generateUrl: (path) => `${mainConfig.baseUrl}/images${path}`,
+        // The route that will be created in Keystone's backend to serve the images
+        serverRoute: {
+          path: '/images',
+        },
+        storagePath: 'public/images',
+      },
     },
     lists,
     session,

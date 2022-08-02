@@ -12,6 +12,8 @@ import { createAuth } from '@keystone-6/auth'
 // See https://keystonejs.com/docs/apis/session#session-api for the session docs
 import { statelessSessions } from '@keystone-6/core/session'
 
+import 'dotenv/config'
+
 let sessionSecret = process.env.SESSION_SECRET
 
 // Here is a best practice! It's fine to not have provided a session secret in dev,
@@ -30,7 +32,7 @@ if (!sessionSecret) {
 const { withAuth } = createAuth({
   listKey: 'User',
   identityField: 'email',
-  sessionData: 'name isAdmin',
+  sessionData: 'id name isAdmin',
   secretField: 'password',
   initFirstItem: {
     // If there are no items in the database, keystone will ask you to create

@@ -19,7 +19,7 @@ import { list } from '@keystone-6/core'
 
 // We're using some common fields in the starter. Check out https://keystonejs.com/docs/apis/fields#fields-api
 // for the full list of fields.
-import { text, relationship, password, timestamp, select, checkbox } from '@keystone-6/core/fields'
+import { text, relationship, password, timestamp, select, checkbox, image } from '@keystone-6/core/fields'
 // The document field is a more complicated field, so it's in its own package
 // Keystone aims to have all the base field types, but you can make your own
 // custom ones.
@@ -31,6 +31,7 @@ import { document } from '@keystone-6/fields-document'
 // that Typescript cannot easily infer.
 import { Lists } from '.keystone/types'
 import { isAdmin, isAdminOrPerson, isPerson, isUser } from './helpers/access'
+import { mainConfig } from './config'
 
 // We have a users list, a blogs list, and tags for blog posts, so they can be filtered.
 // Each property on the exported object will become the name of a list (a.k.a. the `listKey`),
@@ -68,7 +69,9 @@ export const lists: Lists = {
           update: isPerson,
         },
       }),
+      avatar: image({ storage: mainConfig.localStorageName }),
       isAdmin: checkbox({
+        defaultValue: false,
         access: {
           read: isUser,
           update: isAdmin,

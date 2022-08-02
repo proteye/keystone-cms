@@ -13,13 +13,18 @@ generator client {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  name     String  @default("")
-  email    String  @unique @default("")
-  password String
-  isAdmin  Boolean @default(false)
-  status   String? @default("active")
-  posts    Post[]  @relation("Post_author")
+  id               String  @id @default(cuid())
+  name             String  @default("")
+  email            String  @unique @default("")
+  password         String
+  avatar_filesize  Int?
+  avatar_extension String?
+  avatar_width     Int?
+  avatar_height    Int?
+  avatar_id        String?
+  isAdmin          Boolean @default(false)
+  status           String? @default("active")
+  posts            Post[]  @relation("Post_author")
 }
 
 model Post {
