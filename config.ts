@@ -1,3 +1,3 @@
 export const mainConfig = {
-    dbName: process.env.DB_NAME || 'keystone.db'
+  dbName: process.env.DB_NAME || 'keystone.db',
 }

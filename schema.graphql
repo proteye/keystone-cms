@@ -6,6 +6,8 @@ type User {
   name: String
   email: String
   password: PasswordState
+  isAdmin: Boolean
+  status: String
   posts(
     where: PostWhereInput! = {}
     orderBy: [PostOrderByInput!]! = []
@@ -31,6 +33,8 @@ input UserWhereInput {
   id: IDFilter
   name: StringFilter
   email: StringFilter
+  isAdmin: BooleanFilter
+  status: StringNullableFilter
   posts: PostManyRelationFilter
 }
 
@@ -73,6 +77,39 @@ input NestedStringFilter {
   not: NestedStringFilter
 }
 
+input BooleanFilter {
+  equals: Boolean
+  not: BooleanFilter
+}
+
+input StringNullableFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  not: NestedStringNullableFilter
+}
+
+input NestedStringNullableFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  not: NestedStringNullableFilter
+}
+
 input PostManyRelationFilter {
   every: PostWhereInput
   some: PostWhereInput
@@ -83,6 +120,8 @@ input UserOrderByInput {
   id: OrderDirection
   name: OrderDirection
   email: OrderDirection
+  isAdmin: OrderDirection
+  status: OrderDirection
 }
 
 enum OrderDirection {
@@ -94,6 +133,8 @@ input UserUpdateInput {
   name: String
   email: String
   password: String
+  isAdmin: Boolean
+  status: String
   posts: PostRelateToManyForUpdateInput
 }
 
@@ -113,6 +154,8 @@ input UserCreateInput {
   name: String
   email: String
   password: String
+  isAdmin: Boolean
+  status: String
   posts: PostRelateToManyForCreateInput
 }
 
@@ -158,34 +201,6 @@ input PostWhereInput {
   publishDate: DateTimeNullableFilter
   author: UserWhereInput
   tags: TagManyRelationFilter
-}
-
-input StringNullableFilter {
-  equals: String
-  in: [String!]
-  notIn: [String!]
-  lt: String
-  lte: String
-  gt: String
-  gte: String
-  contains: String
-  startsWith: String
-  endsWith: String
-  not: NestedStringNullableFilter
-}
-
-input NestedStringNullableFilter {
-  equals: String
-  in: [String!]
-  notIn: [String!]
-  lt: String
-  lte: String
-  gt: String
-  gte: String
-  contains: String
-  startsWith: String
-  endsWith: String
-  not: NestedStringNullableFilter
 }
 
 input DateTimeNullableFilter {
@@ -357,6 +372,7 @@ input CreateInitialUserInput {
   name: String
   email: String
   password: String
+  isAdmin: Boolean
 }
 
 type Query {
