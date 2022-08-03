@@ -5,3 +5,4 @@ keystone.db
 *.db
 .env
 public/images
+.DS_Store

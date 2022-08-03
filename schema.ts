@@ -46,6 +46,9 @@ const seoFields = {
 
 const slugField = text({ isIndexed: 'unique', validation: { isRequired: true } })
 
+const imageField = image({ storage: mainConfig.storage.localImages })
+const imageAltField = text({ defaultValue: '', validation: { length: { max: 255 } } })
+
 const statusField = select({
   options: [
     { label: 'Published', value: 'published' },
@@ -101,7 +104,7 @@ export const lists: Lists = {
           update: isPerson,
         },
       }),
-      avatar: image({ storage: mainConfig.localStorageName }),
+      avatar: imageField,
       isAdmin: checkbox({
         defaultValue: false,
         access: {
@@ -124,6 +127,7 @@ export const lists: Lists = {
       // should be referencable by the 'author' field of posts.
       // Make sure you read the docs to understand how they work: https://keystonejs.com/docs/guides/relationships#understanding-relationships
       posts: relationship({ ref: 'Post.author', many: true }),
+      pages: relationship({ ref: 'Page.author', many: true }),
     },
     // Here we can configure the Admin UI. We want to show a user's name and posts in the Admin UI
     ui: {
@@ -136,6 +140,7 @@ export const lists: Lists = {
     fields: {
       title: text({ isFilterable: true, validation: { isRequired: true } }),
       slug: slugField,
+      brief: text({ ui: { displayMode: 'textarea' } }),
       // The document field can be used for making highly editable content. Check out our
       // guide on the document field https://keystonejs.com/docs/guides/document-fields#how-to-use-document-fields
       // for more information
@@ -151,13 +156,24 @@ export const lists: Lists = {
         links: true,
         dividers: true,
       }),
+      image: imageField,
+      imageAlt: imageAltField,
       // Having the status here will make it easy for us to choose whether to display
       // posts on a live site.
       status: statusField,
-      viewsCount: viewsCountField,
+      commnetStatus: select({
+        options: [
+          { label: 'Open', value: 'open' },
+          { label: 'Closed', value: 'closed' },
+        ],
+        defaultValue: 'closed',
+      }),
+      order: orderField,
       ...seoFields,
       ...timestampFields,
       publishDate: timestamp(),
+      viewsCount: viewsCountField,
+      commentCount: viewsCountField,
       // Here is the link from post => author.
       // We've configured its UI display quite a lot to make the experience of editing posts better.
       author: relationship({
@@ -165,7 +181,7 @@ export const lists: Lists = {
         ui: {
           displayMode: 'cards',
           cardFields: ['name', 'email'],
-          inlineEdit: { fields: ['name', 'email'] },
+          inlineEdit: { fields: ['name'] },
           linkToItem: true,
           inlineConnect: true,
         },
@@ -195,18 +211,54 @@ export const lists: Lists = {
       }),
     },
   }),
+  Page: list({
+    fields: {
+      title: text({ isFilterable: true, validation: { isRequired: true } }),
+      slug: slugField,
+      content: document({
+        formatting: true,
+        layouts: [
+          [1, 1],
+          [1, 1, 1],
+          [2, 1],
+          [1, 2],
+          [1, 2, 1],
+        ],
+        links: true,
+        dividers: true,
+      }),
+      image: imageField,
+      imageAlt: imageAltField,
+      status: statusField,
+      order: orderField,
+      ...seoFields,
+      ...timestampFields,
+      viewsCount: viewsCountField,
+      author: relationship({
+        ref: 'User.pages',
+        ui: {
+          displayMode: 'cards',
+          cardFields: ['name', 'email'],
+          inlineEdit: { fields: ['name'] },
+          linkToItem: true,
+          inlineConnect: true,
+        },
+      }),
+    },
+  }),
   Category: list({
     fields: {
       name: text({ validation: { isRequired: true } }),
       slug: slugField,
       description: text({ ui: { displayMode: 'textarea' } }),
-      image: image({ storage: mainConfig.localStorageName }),
-      imageAlt: text(),
+      image: imageField,
+      imageAlt: imageAltField,
       status: statusField,
       order: orderField,
       ...seoFields,
       ...timestampFields,
       posts: relationship({ ref: 'Post.category', many: true }),
+      tags: relationship({ ref: 'Tag.category', many: true }),
     },
   }),
   Tag: list({
@@ -215,6 +267,9 @@ export const lists: Lists = {
     },
     fields: {
       name: text(),
+      slug: slugField,
+      ...timestampFields,
+      category: relationship({ ref: 'Category.tags' }),
       posts: relationship({ ref: 'Post.tags', many: true }),
     },
   }),

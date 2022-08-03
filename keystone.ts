@@ -30,7 +30,7 @@ export default withAuth(
       isAccessAllowed: (context) => !!context.session?.data,
     },
     storage: {
-      [mainConfig.localStorageName]: {
+      [mainConfig.storage.localImages]: {
         // Images that use this store will be stored on the local machine
         kind: 'local',
         // This store is used for the image field type

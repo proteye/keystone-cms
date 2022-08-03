@@ -25,29 +25,67 @@ model User {
   isAdmin          Boolean @default(false)
   status           String? @default("active")
   posts            Post[]  @relation("Post_author")
+  pages            Page[]  @relation("Page_author")
 }
 
 model Post {
-  id             String    @id @default(cuid())
-  title          String    @default("")
-  slug           String    @unique @default("")
-  content        String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
-  status         String?   @default("draft")
-  viewsCount     Int?      @default(0)
-  seoTitle       String    @default("")
-  seoDescription String    @default("")
-  seoKeywords    String    @default("")
-  createdAt      DateTime? @default(now())
-  updatedAt      DateTime? @default(now()) @updatedAt
-  publishDate    DateTime?
-  author         User?     @relation("Post_author", fields: [authorId], references: [id])
-  authorId       String?   @map("author")
-  category       Category? @relation("Post_category", fields: [categoryId], references: [id])
-  categoryId     String?   @map("category")
-  tags           Tag[]     @relation("Post_tags")
+  id              String    @id @default(cuid())
+  title           String    @default("")
+  slug            String    @unique @default("")
+  brief           String    @default("")
+  content         String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
+  image_filesize  Int?
+  image_extension String?
+  image_width     Int?
+  image_height    Int?
+  image_id        String?
+  imageAlt        String    @default("")
+  status          String?   @default("draft")
+  commnetStatus   String?   @default("closed")
+  order           Int?      @default(-1)
+  seoTitle        String    @default("")
+  seoDescription  String    @default("")
+  seoKeywords     String    @default("")
+  createdAt       DateTime? @default(now())
+  updatedAt       DateTime? @default(now()) @updatedAt
+  publishDate     DateTime?
+  viewsCount      Int?      @default(0)
+  commentCount    Int?      @default(0)
+  author          User?     @relation("Post_author", fields: [authorId], references: [id])
+  authorId        String?   @map("author")
+  category        Category? @relation("Post_category", fields: [categoryId], references: [id])
+  categoryId      String?   @map("category")
+  tags            Tag[]     @relation("Post_tags")
 
+  @@index([order])
   @@index([authorId])
   @@index([categoryId])
+}
+
+model Page {
+  id              String    @id @default(cuid())
+  title           String    @default("")
+  slug            String    @unique @default("")
+  content         String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
+  image_filesize  Int?
+  image_extension String?
+  image_width     Int?
+  image_height    Int?
+  image_id        String?
+  imageAlt        String    @default("")
+  status          String?   @default("draft")
+  order           Int?      @default(-1)
+  seoTitle        String    @default("")
+  seoDescription  String    @default("")
+  seoKeywords     String    @default("")
+  createdAt       DateTime? @default(now())
+  updatedAt       DateTime? @default(now()) @updatedAt
+  viewsCount      Int?      @default(0)
+  author          User?     @relation("Page_author", fields: [authorId], references: [id])
+  authorId        String?   @map("author")
+
+  @@index([order])
+  @@index([authorId])
 }
 
 model Category {
@@ -69,12 +107,20 @@ model Category {
   createdAt       DateTime? @default(now())
   updatedAt       DateTime? @default(now()) @updatedAt
   posts           Post[]    @relation("Post_category")
+  tags            Tag[]     @relation("Tag_category")
 
   @@index([order])
 }
 
 model Tag {
-  id    String @id @default(cuid())
-  name  String @default("")
-  posts Post[] @relation("Post_tags")
+  id         String    @id @default(cuid())
+  name       String    @default("")
+  slug       String    @unique @default("")
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @default(now()) @updatedAt
+  category   Category? @relation("Tag_category", fields: [categoryId], references: [id])
+  categoryId String?   @map("category")
+  posts      Post[]    @relation("Post_tags")
+
+  @@index([categoryId])
 }
