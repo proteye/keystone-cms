@@ -28,16 +28,49 @@ model User {
 }
 
 model Post {
-  id          String    @id @default(cuid())
-  title       String    @default("")
-  status      String?   @default("draft")
-  content     String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
-  publishDate DateTime?
-  author      User?     @relation("Post_author", fields: [authorId], references: [id])
-  authorId    String?   @map("author")
-  tags        Tag[]     @relation("Post_tags")
+  id             String    @id @default(cuid())
+  title          String    @default("")
+  slug           String    @unique @default("")
+  content        String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
+  status         String?   @default("draft")
+  viewsCount     Int?      @default(0)
+  seoTitle       String    @default("")
+  seoDescription String    @default("")
+  seoKeywords    String    @default("")
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @default(now()) @updatedAt
+  publishDate    DateTime?
+  author         User?     @relation("Post_author", fields: [authorId], references: [id])
+  authorId       String?   @map("author")
+  category       Category? @relation("Post_category", fields: [categoryId], references: [id])
+  categoryId     String?   @map("category")
+  tags           Tag[]     @relation("Post_tags")
 
   @@index([authorId])
+  @@index([categoryId])
+}
+
+model Category {
+  id              String    @id @default(cuid())
+  name            String    @default("")
+  slug            String    @unique @default("")
+  description     String    @default("")
+  image_filesize  Int?
+  image_extension String?
+  image_width     Int?
+  image_height    Int?
+  image_id        String?
+  imageAlt        String    @default("")
+  status          String?   @default("draft")
+  order           Int?      @default(-1)
+  seoTitle        String    @default("")
+  seoDescription  String    @default("")
+  seoKeywords     String    @default("")
+  createdAt       DateTime? @default(now())
+  updatedAt       DateTime? @default(now()) @updatedAt
+  posts           Post[]    @relation("Post_category")
+
+  @@index([order])
 }
 
 model Tag {

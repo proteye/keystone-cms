@@ -195,10 +195,18 @@ input PostRelateToManyForCreateInput {
 type Post {
   id: ID!
   title: String
-  status: String
+  slug: String
   content: Post_content_Document
+  status: String
+  viewsCount: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
   publishDate: DateTime
   author: User
+  category: Category
   tags(
     where: TagWhereInput! = {}
     orderBy: [TagOrderByInput!]! = []
@@ -217,6 +225,7 @@ scalar DateTime
 
 input PostWhereUniqueInput {
   id: ID
+  slug: String
 }
 
 input PostWhereInput {
@@ -225,10 +234,29 @@ input PostWhereInput {
   NOT: [PostWhereInput!]
   id: IDFilter
   title: StringFilter
+  slug: StringFilter
   status: StringNullableFilter
+  viewsCount: IntNullableFilter
+  seoTitle: StringFilter
+  seoDescription: StringFilter
+  seoKeywords: StringFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
   publishDate: DateTimeNullableFilter
   author: UserWhereInput
+  category: CategoryWhereInput
   tags: TagManyRelationFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
 }
 
 input DateTimeNullableFilter {
@@ -251,22 +279,43 @@ input TagManyRelationFilter {
 input PostOrderByInput {
   id: OrderDirection
   title: OrderDirection
+  slug: OrderDirection
   status: OrderDirection
+  viewsCount: OrderDirection
+  seoTitle: OrderDirection
+  seoDescription: OrderDirection
+  seoKeywords: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
   publishDate: OrderDirection
 }
 
 input PostUpdateInput {
   title: String
-  status: String
+  slug: String
   content: JSON
+  status: String
+  viewsCount: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
   publishDate: DateTime
   author: UserRelateToOneForUpdateInput
+  category: CategoryRelateToOneForUpdateInput
   tags: TagRelateToManyForUpdateInput
 }
 
 input UserRelateToOneForUpdateInput {
   create: UserCreateInput
   connect: UserWhereUniqueInput
+  disconnect: Boolean
+}
+
+input CategoryRelateToOneForUpdateInput {
+  create: CategoryCreateInput
+  connect: CategoryWhereUniqueInput
   disconnect: Boolean
 }
 
@@ -284,10 +333,18 @@ input PostUpdateArgs {
 
 input PostCreateInput {
   title: String
-  status: String
+  slug: String
   content: JSON
+  status: String
+  viewsCount: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
   publishDate: DateTime
   author: UserRelateToOneForCreateInput
+  category: CategoryRelateToOneForCreateInput
   tags: TagRelateToManyForCreateInput
 }
 
@@ -296,9 +353,113 @@ input UserRelateToOneForCreateInput {
   connect: UserWhereUniqueInput
 }
 
+input CategoryRelateToOneForCreateInput {
+  create: CategoryCreateInput
+  connect: CategoryWhereUniqueInput
+}
+
 input TagRelateToManyForCreateInput {
   create: [TagCreateInput!]
   connect: [TagWhereUniqueInput!]
+}
+
+type Category {
+  id: ID!
+  name: String
+  slug: String
+  description: String
+  image: ImageFieldOutput
+  imageAlt: String
+  status: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  posts(
+    where: PostWhereInput! = {}
+    orderBy: [PostOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Post!]
+  postsCount(where: PostWhereInput! = {}): Int
+}
+
+input CategoryWhereUniqueInput {
+  id: ID
+  slug: String
+}
+
+input CategoryWhereInput {
+  AND: [CategoryWhereInput!]
+  OR: [CategoryWhereInput!]
+  NOT: [CategoryWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  slug: StringFilter
+  description: StringFilter
+  imageAlt: StringFilter
+  status: StringNullableFilter
+  order: IntNullableFilter
+  seoTitle: StringFilter
+  seoDescription: StringFilter
+  seoKeywords: StringFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+  posts: PostManyRelationFilter
+}
+
+input CategoryOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  slug: OrderDirection
+  description: OrderDirection
+  imageAlt: OrderDirection
+  status: OrderDirection
+  order: OrderDirection
+  seoTitle: OrderDirection
+  seoDescription: OrderDirection
+  seoKeywords: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input CategoryUpdateInput {
+  name: String
+  slug: String
+  description: String
+  image: ImageFieldInput
+  imageAlt: String
+  status: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  posts: PostRelateToManyForUpdateInput
+}
+
+input CategoryUpdateArgs {
+  where: CategoryWhereUniqueInput!
+  data: CategoryUpdateInput!
+}
+
+input CategoryCreateInput {
+  name: String
+  slug: String
+  description: String
+  image: ImageFieldInput
+  imageAlt: String
+  status: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  posts: PostRelateToManyForCreateInput
 }
 
 type Tag {
@@ -367,6 +528,15 @@ type Mutation {
   updatePosts(data: [PostUpdateArgs!]!): [Post]
   deletePost(where: PostWhereUniqueInput!): Post
   deletePosts(where: [PostWhereUniqueInput!]!): [Post]
+  createCategory(data: CategoryCreateInput!): Category
+  createCategories(data: [CategoryCreateInput!]!): [Category]
+  updateCategory(
+    where: CategoryWhereUniqueInput!
+    data: CategoryUpdateInput!
+  ): Category
+  updateCategories(data: [CategoryUpdateArgs!]!): [Category]
+  deleteCategory(where: CategoryWhereUniqueInput!): Category
+  deleteCategories(where: [CategoryWhereUniqueInput!]!): [Category]
   createTag(data: TagCreateInput!): Tag
   createTags(data: [TagCreateInput!]!): [Tag]
   updateTag(where: TagWhereUniqueInput!, data: TagUpdateInput!): Tag
@@ -420,6 +590,14 @@ type Query {
   ): [Post!]
   post(where: PostWhereUniqueInput!): Post
   postsCount(where: PostWhereInput! = {}): Int
+  categories(
+    where: CategoryWhereInput! = {}
+    orderBy: [CategoryOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Category!]
+  category(where: CategoryWhereUniqueInput!): Category
+  categoriesCount(where: CategoryWhereInput! = {}): Int
   tags(
     where: TagWhereInput! = {}
     orderBy: [TagOrderByInput!]! = []

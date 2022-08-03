@@ -19,7 +19,7 @@ import { list } from '@keystone-6/core'
 
 // We're using some common fields in the starter. Check out https://keystonejs.com/docs/apis/fields#fields-api
 // for the full list of fields.
-import { text, relationship, password, timestamp, select, checkbox, image } from '@keystone-6/core/fields'
+import { integer, text, relationship, password, timestamp, select, checkbox, image } from '@keystone-6/core/fields'
 // The document field is a more complicated field, so it's in its own package
 // Keystone aims to have all the base field types, but you can make your own
 // custom ones.
@@ -33,11 +33,43 @@ import { Lists } from '.keystone/types'
 import { isAdmin, isAdminOrPerson, isPerson, isUser } from './helpers/access'
 import { mainConfig } from './config'
 
+const timestampFields = {
+  createdAt: timestamp({ defaultValue: { kind: 'now' } }),
+  updatedAt: timestamp({ defaultValue: { kind: 'now' }, db: { updatedAt: true } }),
+}
+
+const seoFields = {
+  seoTitle: text({ defaultValue: '', validation: { length: { max: 255 } } }),
+  seoDescription: text({ defaultValue: '', validation: { length: { max: 255 } } }),
+  seoKeywords: text({ defaultValue: '', validation: { length: { max: 255 } } }),
+}
+
+const slugField = text({ isIndexed: 'unique', validation: { isRequired: true } })
+
+const statusField = select({
+  options: [
+    { label: 'Published', value: 'published' },
+    { label: 'Draft', value: 'draft' },
+  ],
+  // We want to make sure new posts start off as a draft when they are created
+  defaultValue: 'draft',
+  // fields also have the ability to configure their appearance in the Admin UI
+  ui: {
+    displayMode: 'segmented-control',
+  },
+})
+
+const orderField = integer({ defaultValue: -1, isIndexed: true })
+
+const viewsCountField = integer({
+  defaultValue: 0,
+  ui: { itemView: { fieldMode: 'read' } },
+})
+
 // We have a users list, a blogs list, and tags for blog posts, so they can be filtered.
 // Each property on the exported object will become the name of a list (a.k.a. the `listKey`),
 // with the value being the definition of the list, including the fields.
 export const lists: Lists = {
-  // Here we define the user list.
   User: list({
     access: {
       operation: {
@@ -96,29 +128,14 @@ export const lists: Lists = {
     // Here we can configure the Admin UI. We want to show a user's name and posts in the Admin UI
     ui: {
       listView: {
-        initialColumns: ['name', 'posts'],
+        initialColumns: ['name', 'isAdmin', 'posts'],
       },
     },
   }),
-  // Our second list is the Posts list. We've got a few more fields here
-  // so we have all the info we need for displaying posts.
   Post: list({
     fields: {
-      title: text(),
-      // Having the status here will make it easy for us to choose whether to display
-      // posts on a live site.
-      status: select({
-        options: [
-          { label: 'Published', value: 'published' },
-          { label: 'Draft', value: 'draft' },
-        ],
-        // We want to make sure new posts start off as a draft when they are created
-        defaultValue: 'draft',
-        // fields also have the ability to configure their appearance in the Admin UI
-        ui: {
-          displayMode: 'segmented-control',
-        },
-      }),
+      title: text({ isFilterable: true, validation: { isRequired: true } }),
+      slug: slugField,
       // The document field can be used for making highly editable content. Check out our
       // guide on the document field https://keystonejs.com/docs/guides/document-fields#how-to-use-document-fields
       // for more information
@@ -134,6 +151,12 @@ export const lists: Lists = {
         links: true,
         dividers: true,
       }),
+      // Having the status here will make it easy for us to choose whether to display
+      // posts on a live site.
+      status: statusField,
+      viewsCount: viewsCountField,
+      ...seoFields,
+      ...timestampFields,
       publishDate: timestamp(),
       // Here is the link from post => author.
       // We've configured its UI display quite a lot to make the experience of editing posts better.
@@ -143,6 +166,16 @@ export const lists: Lists = {
           displayMode: 'cards',
           cardFields: ['name', 'email'],
           inlineEdit: { fields: ['name', 'email'] },
+          linkToItem: true,
+          inlineConnect: true,
+        },
+      }),
+      category: relationship({
+        ref: 'Category.posts',
+        ui: {
+          displayMode: 'cards',
+          cardFields: ['name', 'slug'],
+          inlineEdit: { fields: ['name', 'slug'] },
           linkToItem: true,
           inlineConnect: true,
         },
@@ -162,7 +195,20 @@ export const lists: Lists = {
       }),
     },
   }),
-  // Our final list is the tag list. This field is just a name and a relationship to posts
+  Category: list({
+    fields: {
+      name: text({ validation: { isRequired: true } }),
+      slug: slugField,
+      description: text({ ui: { displayMode: 'textarea' } }),
+      image: image({ storage: mainConfig.localStorageName }),
+      imageAlt: text(),
+      status: statusField,
+      order: orderField,
+      ...seoFields,
+      ...timestampFields,
+      posts: relationship({ ref: 'Post.category', many: true }),
+    },
+  }),
   Tag: list({
     ui: {
       isHidden: true,
