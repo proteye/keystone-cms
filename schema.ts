@@ -1,9 +1,19 @@
 import { list } from '@keystone-6/core'
 import { text, relationship, password, timestamp, select, checkbox } from '@keystone-6/core/fields'
-import { document } from '@keystone-6/fields-document'
-import { Lists } from '.keystone/types'
+import {
+  Lists,
+  PostCreateInput,
+  PostUpdateInput,
+  PageCreateInput,
+  PageUpdateInput,
+  CategoryCreateInput,
+  CategoryUpdateInput,
+  TagCreateInput,
+  TagUpdateInput,
+} from '.keystone/types'
 import { isAdmin, isAdminOrPerson, isPerson, isUser } from './validation'
 import {
+  contentField,
   imageAltField,
   imageField,
   orderField,
@@ -13,6 +23,7 @@ import {
   timestampFields,
   viewsCountField,
 } from './fields'
+import { slugResolveInput } from './hooks'
 
 /**
  * Lists
@@ -64,6 +75,7 @@ export const lists: Lists = {
           displayMode: 'segmented-control',
         },
       }),
+      ...timestampFields,
       posts: relationship({ ref: 'Post.author', many: true }),
       pages: relationship({ ref: 'Page.author', many: true }),
     },
@@ -79,18 +91,7 @@ export const lists: Lists = {
       title: text({ isFilterable: true, validation: { isRequired: true } }),
       slug: slugField,
       brief: text({ ui: { displayMode: 'textarea' } }),
-      content: document({
-        formatting: true,
-        layouts: [
-          [1, 1],
-          [1, 1, 1],
-          [2, 1],
-          [1, 2],
-          [1, 2, 1],
-        ],
-        links: true,
-        dividers: true,
-      }),
+      content: contentField,
       image: imageField,
       imageAlt: imageAltField,
       status: statusField,
@@ -104,7 +105,7 @@ export const lists: Lists = {
       order: orderField,
       ...seoFields,
       ...timestampFields,
-      publishDate: timestamp(),
+      publishDate: timestamp({ defaultValue: { kind: 'now' } }),
       viewsCount: viewsCountField,
       commentCount: viewsCountField,
       author: relationship({
@@ -140,24 +141,16 @@ export const lists: Lists = {
         many: true,
       }),
     },
+    hooks: {
+      resolveInput: slugResolveInput<PostCreateInput | PostUpdateInput, Lists.Post.Item>,
+    },
   }),
   /** Page */
   Page: list({
     fields: {
       title: text({ isFilterable: true, validation: { isRequired: true } }),
       slug: slugField,
-      content: document({
-        formatting: true,
-        layouts: [
-          [1, 1],
-          [1, 1, 1],
-          [2, 1],
-          [1, 2],
-          [1, 2, 1],
-        ],
-        links: true,
-        dividers: true,
-      }),
+      content: contentField,
       image: imageField,
       imageAlt: imageAltField,
       status: statusField,
@@ -176,6 +169,9 @@ export const lists: Lists = {
         },
       }),
     },
+    hooks: {
+      resolveInput: slugResolveInput<PageCreateInput | PageUpdateInput, Lists.Page.Item>,
+    },
   }),
   /** Category */
   Category: list({
@@ -192,18 +188,21 @@ export const lists: Lists = {
       posts: relationship({ ref: 'Post.category', many: true }),
       tags: relationship({ ref: 'Tag.category', many: true }),
     },
+    hooks: {
+      resolveInput: slugResolveInput<CategoryCreateInput | CategoryUpdateInput, Lists.Category.Item>,
+    },
   }),
   /** Tag */
   Tag: list({
-    ui: {
-      isHidden: true,
-    },
     fields: {
       name: text(),
       slug: slugField,
       ...timestampFields,
       category: relationship({ ref: 'Category.tags' }),
       posts: relationship({ ref: 'Post.tags', many: true }),
+    },
+    hooks: {
+      resolveInput: slugResolveInput<TagCreateInput | TagUpdateInput, Lists.Tag.Item>,
     },
   }),
 }

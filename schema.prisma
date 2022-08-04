@@ -13,19 +13,21 @@ generator client {
 }
 
 model User {
-  id               String  @id @default(cuid())
-  name             String  @default("")
-  email            String  @unique @default("")
+  id               String    @id @default(cuid())
+  name             String    @default("")
+  email            String    @unique @default("")
   password         String
   avatar_filesize  Int?
   avatar_extension String?
   avatar_width     Int?
   avatar_height    Int?
   avatar_id        String?
-  isAdmin          Boolean @default(false)
-  status           String? @default("active")
-  posts            Post[]  @relation("Post_author")
-  pages            Page[]  @relation("Page_author")
+  isAdmin          Boolean   @default(false)
+  status           String?   @default("active")
+  createdAt        DateTime? @default(now())
+  updatedAt        DateTime? @default(now()) @updatedAt
+  posts            Post[]    @relation("Post_author")
+  pages            Page[]    @relation("Page_author")
 }
 
 model Post {
@@ -48,7 +50,7 @@ model Post {
   seoKeywords     String    @default("")
   createdAt       DateTime? @default(now())
   updatedAt       DateTime? @default(now()) @updatedAt
-  publishDate     DateTime?
+  publishDate     DateTime? @default(now())
   viewsCount      Int?      @default(0)
   commentCount    Int?      @default(0)
   author          User?     @relation("Post_author", fields: [authorId], references: [id])

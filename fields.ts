@@ -1,13 +1,27 @@
 import { integer, text, timestamp, select, image } from '@keystone-6/core/fields'
+import { document } from '@keystone-6/fields-document'
 import { mainConfig } from './config'
 
-export const slugField = text({ isIndexed: 'unique', validation: { isRequired: true } })
+export const slugField = text({ defaultValue: '', isIndexed: 'unique', db: { isNullable: false } })
 
 export const imageField = image({ storage: mainConfig.storage.localImages })
 
 export const imageAltField = text({ defaultValue: '', validation: { length: { max: 255 } } })
 
 export const orderField = integer({ defaultValue: -1, isIndexed: true })
+
+export const contentField = document({
+  formatting: true,
+  layouts: [
+    [1, 1],
+    [1, 1, 1],
+    [2, 1],
+    [1, 2],
+    [1, 2, 1],
+  ],
+  links: true,
+  dividers: true,
+})
 
 export const statusField = select({
   options: [
@@ -22,7 +36,7 @@ export const statusField = select({
 
 export const viewsCountField = integer({
   defaultValue: 0,
-  ui: { itemView: { fieldMode: 'read' } },
+  ui: { createView: { fieldMode: 'hidden' }, itemView: { fieldMode: 'read' } },
 })
 
 export const seoFields = {
@@ -32,6 +46,13 @@ export const seoFields = {
 }
 
 export const timestampFields = {
-  createdAt: timestamp({ defaultValue: { kind: 'now' } }),
-  updatedAt: timestamp({ defaultValue: { kind: 'now' }, db: { updatedAt: true } }),
+  createdAt: timestamp({
+    defaultValue: { kind: 'now' },
+    ui: { createView: { fieldMode: 'hidden' }, itemView: { fieldMode: 'hidden' } },
+  }),
+  updatedAt: timestamp({
+    defaultValue: { kind: 'now' },
+    db: { updatedAt: true },
+    ui: { createView: { fieldMode: 'hidden' }, itemView: { fieldMode: 'hidden' } },
+  }),
 }
