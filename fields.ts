@@ -1,4 +1,4 @@
-import { integer, text, timestamp, select, image } from '@keystone-6/core/fields'
+import { integer, text, timestamp, select, image, relationship } from '@keystone-6/core/fields'
 import { document } from '@keystone-6/fields-document'
 import slugify from 'slugify'
 import { mainConfig } from './config'
@@ -20,6 +20,45 @@ export const slugField = text({
     },
   },
 })
+
+export const authorField = (ref: string) =>
+  relationship({
+    ref,
+    ui: {
+      displayMode: 'select',
+      labelField: 'name',
+      hideCreate: true,
+      createView: {
+        fieldMode: ({
+          session: {
+            data: { isAdmin },
+          },
+        }) => (isAdmin ? 'edit' : 'hidden'),
+      },
+      itemView: {
+        fieldMode: ({
+          session: {
+            data: { isAdmin },
+          },
+        }) => (isAdmin ? 'edit' : 'read'),
+      },
+    },
+    hooks: {
+      resolveInput: ({ resolvedData, fieldKey, operation, context }) => {
+        const { id, isAdmin } = context.session.data
+
+        if (
+          !isAdmin ||
+          (operation === 'update' && resolvedData[fieldKey]?.disconnect) ||
+          (operation === 'create' && !resolvedData[fieldKey]?.connect)
+        ) {
+          return { connect: { id } }
+        }
+
+        return resolvedData[fieldKey]
+      },
+    },
+  })
 
 export const imageField = image({ storage: mainConfig.storage.localImages })
 

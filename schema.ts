@@ -3,6 +3,7 @@ import { text, relationship, password, timestamp, select, checkbox } from '@keys
 import { Lists } from '.keystone/types'
 import { isAdmin, isAdminOrPerson, isPerson, isUser } from './validation'
 import {
+  authorField,
   contentField,
   imageAltField,
   imageField,
@@ -37,6 +38,7 @@ export const lists: Lists = {
         isFilterable: true,
         access: {
           read: isAdminOrPerson,
+          update: isAdminOrPerson,
         },
       }),
       password: password({
@@ -70,7 +72,7 @@ export const lists: Lists = {
     },
     ui: {
       listView: {
-        initialColumns: ['name', 'isAdmin', 'posts'],
+        initialColumns: ['name', 'email', 'isAdmin', 'status'],
       },
     },
   }),
@@ -97,24 +99,13 @@ export const lists: Lists = {
       publishDate: timestamp({ defaultValue: { kind: 'now' } }),
       viewsCount: viewsCountField,
       commentCount: viewsCountField,
-      author: relationship({
-        ref: 'User.posts',
-        ui: {
-          displayMode: 'cards',
-          cardFields: ['name', 'email'],
-          inlineEdit: { fields: ['name'] },
-          linkToItem: true,
-          inlineConnect: true,
-        },
-      }),
+      author: authorField('User.posts'),
       category: relationship({
         ref: 'Category.posts',
         ui: {
-          displayMode: 'cards',
-          cardFields: ['name', 'slug'],
-          inlineEdit: { fields: ['name', 'slug'] },
-          linkToItem: true,
-          inlineConnect: true,
+          displayMode: 'select',
+          labelField: 'name',
+          hideCreate: false,
         },
       }),
       tags: relationship({
@@ -122,13 +113,18 @@ export const lists: Lists = {
         ui: {
           displayMode: 'cards',
           cardFields: ['name'],
-          inlineEdit: { fields: ['name'] },
+          inlineEdit: { fields: ['name', 'category'] },
           linkToItem: true,
           inlineConnect: true,
-          inlineCreate: { fields: ['name'] },
+          inlineCreate: { fields: ['name', 'category'] },
         },
         many: true,
       }),
+    },
+    ui: {
+      listView: {
+        initialColumns: ['title', 'slug', 'category', 'tags', 'author', 'viewsCount', 'status'],
+      },
     },
   }),
   /** Page */
@@ -144,16 +140,12 @@ export const lists: Lists = {
       ...seoFields,
       ...timestampFields,
       viewsCount: viewsCountField,
-      author: relationship({
-        ref: 'User.pages',
-        ui: {
-          displayMode: 'cards',
-          cardFields: ['name', 'email'],
-          inlineEdit: { fields: ['name'] },
-          linkToItem: true,
-          inlineConnect: true,
-        },
-      }),
+      author: authorField('User.pages'),
+    },
+    ui: {
+      listView: {
+        initialColumns: ['title', 'slug', 'author', 'viewsCount', 'status'],
+      },
     },
   }),
   /** Category */
@@ -171,6 +163,11 @@ export const lists: Lists = {
       posts: relationship({ ref: 'Post.category', many: true }),
       tags: relationship({ ref: 'Tag.category', many: true }),
     },
+    ui: {
+      listView: {
+        initialColumns: ['name', 'slug', 'description', 'status'],
+      },
+    },
   }),
   /** Tag */
   Tag: list({
@@ -178,8 +175,20 @@ export const lists: Lists = {
       name: text(),
       slug: slugField,
       ...timestampFields,
-      category: relationship({ ref: 'Category.tags' }),
+      category: relationship({
+        ref: 'Category.tags',
+        ui: {
+          displayMode: 'select',
+          labelField: 'name',
+          hideCreate: true,
+        },
+      }),
       posts: relationship({ ref: 'Post.tags', many: true }),
+    },
+    ui: {
+      listView: {
+        initialColumns: ['name', 'slug', 'category'],
+      },
     },
   }),
 }
