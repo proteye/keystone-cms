@@ -41,7 +41,7 @@ model Post {
   image_id        String?
   imageAlt        String    @default("")
   status          String?   @default("draft")
-  commnetStatus   String?   @default("closed")
+  commentStatus   String?   @default("closed")
   order           Int?      @default(-1)
   seoTitle        String    @default("")
   seoDescription  String    @default("")

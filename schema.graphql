@@ -229,7 +229,7 @@ type Post {
   image: ImageFieldOutput
   imageAlt: String
   status: String
-  commnetStatus: String
+  commentStatus: String
   order: Int
   seoTitle: String
   seoDescription: String
@@ -272,7 +272,7 @@ input PostWhereInput {
   brief: StringFilter
   imageAlt: StringFilter
   status: StringNullableFilter
-  commnetStatus: StringNullableFilter
+  commentStatus: StringNullableFilter
   order: IntNullableFilter
   seoTitle: StringFilter
   seoDescription: StringFilter
@@ -322,7 +322,7 @@ input PostOrderByInput {
   brief: OrderDirection
   imageAlt: OrderDirection
   status: OrderDirection
-  commnetStatus: OrderDirection
+  commentStatus: OrderDirection
   order: OrderDirection
   seoTitle: OrderDirection
   seoDescription: OrderDirection
@@ -342,7 +342,7 @@ input PostUpdateInput {
   image: ImageFieldInput
   imageAlt: String
   status: String
-  commnetStatus: String
+  commentStatus: String
   order: Int
   seoTitle: String
   seoDescription: String
@@ -389,7 +389,7 @@ input PostCreateInput {
   image: ImageFieldInput
   imageAlt: String
   status: String
-  commnetStatus: String
+  commentStatus: String
   order: Int
   seoTitle: String
   seoDescription: String
