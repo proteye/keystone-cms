@@ -6,6 +6,11 @@ type User {
   name: String
   email: String
   password: PasswordState
+  avatar: ImageFieldOutput
+  isAdmin: Boolean
+  status: String
+  createdAt: DateTime
+  updatedAt: DateTime
   posts(
     where: PostWhereInput! = {}
     orderBy: [PostOrderByInput!]! = []
@@ -13,11 +18,37 @@ type User {
     skip: Int! = 0
   ): [Post!]
   postsCount(where: PostWhereInput! = {}): Int
+  pages(
+    where: PageWhereInput! = {}
+    orderBy: [PageOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Page!]
+  pagesCount(where: PageWhereInput! = {}): Int
 }
 
 type PasswordState {
   isSet: Boolean!
 }
+
+type ImageFieldOutput {
+  id: ID!
+  filesize: Int!
+  width: Int!
+  height: Int!
+  extension: ImageExtension!
+  url: String!
+}
+
+enum ImageExtension {
+  jpg
+  png
+  webp
+  gif
+}
+
+scalar DateTime
+  @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc3339#section-5.6")
 
 input UserWhereUniqueInput {
   id: ID
@@ -31,7 +62,12 @@ input UserWhereInput {
   id: IDFilter
   name: StringFilter
   email: StringFilter
+  isAdmin: BooleanFilter
+  status: StringNullableFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
   posts: PostManyRelationFilter
+  pages: PageManyRelationFilter
 }
 
 input IDFilter {
@@ -73,91 +109,9 @@ input NestedStringFilter {
   not: NestedStringFilter
 }
 
-input PostManyRelationFilter {
-  every: PostWhereInput
-  some: PostWhereInput
-  none: PostWhereInput
-}
-
-input UserOrderByInput {
-  id: OrderDirection
-  name: OrderDirection
-  email: OrderDirection
-}
-
-enum OrderDirection {
-  asc
-  desc
-}
-
-input UserUpdateInput {
-  name: String
-  email: String
-  password: String
-  posts: PostRelateToManyForUpdateInput
-}
-
-input PostRelateToManyForUpdateInput {
-  disconnect: [PostWhereUniqueInput!]
-  set: [PostWhereUniqueInput!]
-  create: [PostCreateInput!]
-  connect: [PostWhereUniqueInput!]
-}
-
-input UserUpdateArgs {
-  where: UserWhereUniqueInput!
-  data: UserUpdateInput!
-}
-
-input UserCreateInput {
-  name: String
-  email: String
-  password: String
-  posts: PostRelateToManyForCreateInput
-}
-
-input PostRelateToManyForCreateInput {
-  create: [PostCreateInput!]
-  connect: [PostWhereUniqueInput!]
-}
-
-type Post {
-  id: ID!
-  title: String
-  status: String
-  content: Post_content_Document
-  publishDate: DateTime
-  author: User
-  tags(
-    where: TagWhereInput! = {}
-    orderBy: [TagOrderByInput!]! = []
-    take: Int
-    skip: Int! = 0
-  ): [Tag!]
-  tagsCount(where: TagWhereInput! = {}): Int
-}
-
-type Post_content_Document {
-  document(hydrateRelationships: Boolean! = false): JSON!
-}
-
-scalar DateTime
-  @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc3339#section-5.6")
-
-input PostWhereUniqueInput {
-  id: ID
-}
-
-input PostWhereInput {
-  AND: [PostWhereInput!]
-  OR: [PostWhereInput!]
-  NOT: [PostWhereInput!]
-  id: IDFilter
-  title: StringFilter
-  status: StringNullableFilter
-  publishDate: DateTimeNullableFilter
-  author: UserWhereInput
-  tags: TagManyRelationFilter
+input BooleanFilter {
+  equals: Boolean
+  not: BooleanFilter
 }
 
 input StringNullableFilter {
@@ -199,6 +153,172 @@ input DateTimeNullableFilter {
   not: DateTimeNullableFilter
 }
 
+input PostManyRelationFilter {
+  every: PostWhereInput
+  some: PostWhereInput
+  none: PostWhereInput
+}
+
+input PageManyRelationFilter {
+  every: PageWhereInput
+  some: PageWhereInput
+  none: PageWhereInput
+}
+
+input UserOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  email: OrderDirection
+  isAdmin: OrderDirection
+  status: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+enum OrderDirection {
+  asc
+  desc
+}
+
+input UserUpdateInput {
+  name: String
+  email: String
+  password: String
+  avatar: ImageFieldInput
+  isAdmin: Boolean
+  status: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  posts: PostRelateToManyForUpdateInput
+  pages: PageRelateToManyForUpdateInput
+}
+
+input ImageFieldInput {
+  upload: Upload!
+}
+
+"""
+The `Upload` scalar type represents a file upload.
+"""
+scalar Upload
+
+input PostRelateToManyForUpdateInput {
+  disconnect: [PostWhereUniqueInput!]
+  set: [PostWhereUniqueInput!]
+  create: [PostCreateInput!]
+  connect: [PostWhereUniqueInput!]
+}
+
+input PageRelateToManyForUpdateInput {
+  disconnect: [PageWhereUniqueInput!]
+  set: [PageWhereUniqueInput!]
+  create: [PageCreateInput!]
+  connect: [PageWhereUniqueInput!]
+}
+
+input UserUpdateArgs {
+  where: UserWhereUniqueInput!
+  data: UserUpdateInput!
+}
+
+input UserCreateInput {
+  name: String
+  email: String
+  password: String
+  avatar: ImageFieldInput
+  isAdmin: Boolean
+  status: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  posts: PostRelateToManyForCreateInput
+  pages: PageRelateToManyForCreateInput
+}
+
+input PostRelateToManyForCreateInput {
+  create: [PostCreateInput!]
+  connect: [PostWhereUniqueInput!]
+}
+
+input PageRelateToManyForCreateInput {
+  create: [PageCreateInput!]
+  connect: [PageWhereUniqueInput!]
+}
+
+type Post {
+  id: ID!
+  title: String
+  slug: String
+  brief: String
+  content: Post_content_Document
+  image: ImageFieldOutput
+  imageAlt: String
+  status: String
+  commentStatus: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  publishDate: DateTime
+  viewsCount: Int
+  commentCount: Int
+  author: User
+  category: Category
+  tags(
+    where: TagWhereInput! = {}
+    orderBy: [TagOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Tag!]
+  tagsCount(where: TagWhereInput! = {}): Int
+}
+
+type Post_content_Document {
+  document(hydrateRelationships: Boolean! = false): JSON!
+}
+
+input PostWhereUniqueInput {
+  id: ID
+  slug: String
+}
+
+input PostWhereInput {
+  AND: [PostWhereInput!]
+  OR: [PostWhereInput!]
+  NOT: [PostWhereInput!]
+  id: IDFilter
+  title: StringFilter
+  slug: StringFilter
+  brief: StringFilter
+  imageAlt: StringFilter
+  status: StringNullableFilter
+  commentStatus: StringNullableFilter
+  order: IntNullableFilter
+  seoTitle: StringFilter
+  seoDescription: StringFilter
+  seoKeywords: StringFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+  publishDate: DateTimeNullableFilter
+  viewsCount: IntNullableFilter
+  commentCount: IntNullableFilter
+  author: UserWhereInput
+  category: CategoryWhereInput
+  tags: TagManyRelationFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
+}
+
 input TagManyRelationFilter {
   every: TagWhereInput
   some: TagWhereInput
@@ -208,22 +328,54 @@ input TagManyRelationFilter {
 input PostOrderByInput {
   id: OrderDirection
   title: OrderDirection
+  slug: OrderDirection
+  brief: OrderDirection
+  imageAlt: OrderDirection
   status: OrderDirection
+  commentStatus: OrderDirection
+  order: OrderDirection
+  seoTitle: OrderDirection
+  seoDescription: OrderDirection
+  seoKeywords: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
   publishDate: OrderDirection
+  viewsCount: OrderDirection
+  commentCount: OrderDirection
 }
 
 input PostUpdateInput {
   title: String
-  status: String
+  slug: String
+  brief: String
   content: JSON
+  image: ImageFieldInput
+  imageAlt: String
+  status: String
+  commentStatus: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
   publishDate: DateTime
+  viewsCount: Int
+  commentCount: Int
   author: UserRelateToOneForUpdateInput
+  category: CategoryRelateToOneForUpdateInput
   tags: TagRelateToManyForUpdateInput
 }
 
 input UserRelateToOneForUpdateInput {
   create: UserCreateInput
   connect: UserWhereUniqueInput
+  disconnect: Boolean
+}
+
+input CategoryRelateToOneForUpdateInput {
+  create: CategoryCreateInput
+  connect: CategoryWhereUniqueInput
   disconnect: Boolean
 }
 
@@ -241,10 +393,24 @@ input PostUpdateArgs {
 
 input PostCreateInput {
   title: String
-  status: String
+  slug: String
+  brief: String
   content: JSON
+  image: ImageFieldInput
+  imageAlt: String
+  status: String
+  commentStatus: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
   publishDate: DateTime
+  viewsCount: Int
+  commentCount: Int
   author: UserRelateToOneForCreateInput
+  category: CategoryRelateToOneForCreateInput
   tags: TagRelateToManyForCreateInput
 }
 
@@ -253,14 +419,232 @@ input UserRelateToOneForCreateInput {
   connect: UserWhereUniqueInput
 }
 
+input CategoryRelateToOneForCreateInput {
+  create: CategoryCreateInput
+  connect: CategoryWhereUniqueInput
+}
+
 input TagRelateToManyForCreateInput {
   create: [TagCreateInput!]
   connect: [TagWhereUniqueInput!]
 }
 
+type Page {
+  id: ID!
+  title: String
+  slug: String
+  content: Page_content_Document
+  image: ImageFieldOutput
+  imageAlt: String
+  status: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  viewsCount: Int
+  author: User
+}
+
+type Page_content_Document {
+  document(hydrateRelationships: Boolean! = false): JSON!
+}
+
+input PageWhereUniqueInput {
+  id: ID
+  slug: String
+}
+
+input PageWhereInput {
+  AND: [PageWhereInput!]
+  OR: [PageWhereInput!]
+  NOT: [PageWhereInput!]
+  id: IDFilter
+  title: StringFilter
+  slug: StringFilter
+  imageAlt: StringFilter
+  status: StringNullableFilter
+  order: IntNullableFilter
+  seoTitle: StringFilter
+  seoDescription: StringFilter
+  seoKeywords: StringFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+  viewsCount: IntNullableFilter
+  author: UserWhereInput
+}
+
+input PageOrderByInput {
+  id: OrderDirection
+  title: OrderDirection
+  slug: OrderDirection
+  imageAlt: OrderDirection
+  status: OrderDirection
+  order: OrderDirection
+  seoTitle: OrderDirection
+  seoDescription: OrderDirection
+  seoKeywords: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+  viewsCount: OrderDirection
+}
+
+input PageUpdateInput {
+  title: String
+  slug: String
+  content: JSON
+  image: ImageFieldInput
+  imageAlt: String
+  status: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  viewsCount: Int
+  author: UserRelateToOneForUpdateInput
+}
+
+input PageUpdateArgs {
+  where: PageWhereUniqueInput!
+  data: PageUpdateInput!
+}
+
+input PageCreateInput {
+  title: String
+  slug: String
+  content: JSON
+  image: ImageFieldInput
+  imageAlt: String
+  status: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  viewsCount: Int
+  author: UserRelateToOneForCreateInput
+}
+
+type Category {
+  id: ID!
+  name: String
+  slug: String
+  description: String
+  image: ImageFieldOutput
+  imageAlt: String
+  status: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  posts(
+    where: PostWhereInput! = {}
+    orderBy: [PostOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Post!]
+  postsCount(where: PostWhereInput! = {}): Int
+  tags(
+    where: TagWhereInput! = {}
+    orderBy: [TagOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Tag!]
+  tagsCount(where: TagWhereInput! = {}): Int
+}
+
+input CategoryWhereUniqueInput {
+  id: ID
+  slug: String
+}
+
+input CategoryWhereInput {
+  AND: [CategoryWhereInput!]
+  OR: [CategoryWhereInput!]
+  NOT: [CategoryWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  slug: StringFilter
+  description: StringFilter
+  imageAlt: StringFilter
+  status: StringNullableFilter
+  order: IntNullableFilter
+  seoTitle: StringFilter
+  seoDescription: StringFilter
+  seoKeywords: StringFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+  posts: PostManyRelationFilter
+  tags: TagManyRelationFilter
+}
+
+input CategoryOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  slug: OrderDirection
+  description: OrderDirection
+  imageAlt: OrderDirection
+  status: OrderDirection
+  order: OrderDirection
+  seoTitle: OrderDirection
+  seoDescription: OrderDirection
+  seoKeywords: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input CategoryUpdateInput {
+  name: String
+  slug: String
+  description: String
+  image: ImageFieldInput
+  imageAlt: String
+  status: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  posts: PostRelateToManyForUpdateInput
+  tags: TagRelateToManyForUpdateInput
+}
+
+input CategoryUpdateArgs {
+  where: CategoryWhereUniqueInput!
+  data: CategoryUpdateInput!
+}
+
+input CategoryCreateInput {
+  name: String
+  slug: String
+  description: String
+  image: ImageFieldInput
+  imageAlt: String
+  status: String
+  order: Int
+  seoTitle: String
+  seoDescription: String
+  seoKeywords: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  posts: PostRelateToManyForCreateInput
+  tags: TagRelateToManyForCreateInput
+}
+
 type Tag {
   id: ID!
   name: String
+  slug: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  category: Category
   posts(
     where: PostWhereInput! = {}
     orderBy: [PostOrderByInput!]! = []
@@ -272,6 +656,7 @@ type Tag {
 
 input TagWhereUniqueInput {
   id: ID
+  slug: String
 }
 
 input TagWhereInput {
@@ -280,16 +665,27 @@ input TagWhereInput {
   NOT: [TagWhereInput!]
   id: IDFilter
   name: StringFilter
+  slug: StringFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+  category: CategoryWhereInput
   posts: PostManyRelationFilter
 }
 
 input TagOrderByInput {
   id: OrderDirection
   name: OrderDirection
+  slug: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
 }
 
 input TagUpdateInput {
   name: String
+  slug: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  category: CategoryRelateToOneForUpdateInput
   posts: PostRelateToManyForUpdateInput
 }
 
@@ -300,6 +696,10 @@ input TagUpdateArgs {
 
 input TagCreateInput {
   name: String
+  slug: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  category: CategoryRelateToOneForCreateInput
   posts: PostRelateToManyForCreateInput
 }
 
@@ -324,6 +724,21 @@ type Mutation {
   updatePosts(data: [PostUpdateArgs!]!): [Post]
   deletePost(where: PostWhereUniqueInput!): Post
   deletePosts(where: [PostWhereUniqueInput!]!): [Post]
+  createPage(data: PageCreateInput!): Page
+  createPages(data: [PageCreateInput!]!): [Page]
+  updatePage(where: PageWhereUniqueInput!, data: PageUpdateInput!): Page
+  updatePages(data: [PageUpdateArgs!]!): [Page]
+  deletePage(where: PageWhereUniqueInput!): Page
+  deletePages(where: [PageWhereUniqueInput!]!): [Page]
+  createCategory(data: CategoryCreateInput!): Category
+  createCategories(data: [CategoryCreateInput!]!): [Category]
+  updateCategory(
+    where: CategoryWhereUniqueInput!
+    data: CategoryUpdateInput!
+  ): Category
+  updateCategories(data: [CategoryUpdateArgs!]!): [Category]
+  deleteCategory(where: CategoryWhereUniqueInput!): Category
+  deleteCategories(where: [CategoryWhereUniqueInput!]!): [Category]
   createTag(data: TagCreateInput!): Tag
   createTags(data: [TagCreateInput!]!): [Tag]
   updateTag(where: TagWhereUniqueInput!, data: TagUpdateInput!): Tag
@@ -357,6 +772,7 @@ input CreateInitialUserInput {
   name: String
   email: String
   password: String
+  isAdmin: Boolean
 }
 
 type Query {
@@ -376,6 +792,22 @@ type Query {
   ): [Post!]
   post(where: PostWhereUniqueInput!): Post
   postsCount(where: PostWhereInput! = {}): Int
+  pages(
+    where: PageWhereInput! = {}
+    orderBy: [PageOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Page!]
+  page(where: PageWhereUniqueInput!): Page
+  pagesCount(where: PageWhereInput! = {}): Int
+  categories(
+    where: CategoryWhereInput! = {}
+    orderBy: [CategoryOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Category!]
+  category(where: CategoryWhereUniqueInput!): Category
+  categoriesCount(where: CategoryWhereInput! = {}): Int
   tags(
     where: TagWhereInput! = {}
     orderBy: [TagOrderByInput!]! = []

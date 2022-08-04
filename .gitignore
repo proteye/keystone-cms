@@ -2,3 +2,7 @@ node_modules
 .keystone/admin
 keystone.db
 *.log
+*.db
+.env
+public/images
+.DS_Store
