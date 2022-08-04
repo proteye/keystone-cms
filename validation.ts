@@ -1,4 +1,4 @@
-import { Session, UserData } from '../types'
+import { Session, UserData } from './types'
 
 // Validate there is a user with a valid session
 export const isUser = ({ session }: { session: Session }) => !!session?.data.id
