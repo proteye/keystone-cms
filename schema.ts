@@ -1,16 +1,6 @@
 import { list } from '@keystone-6/core'
 import { text, relationship, password, timestamp, select, checkbox } from '@keystone-6/core/fields'
-import {
-  Lists,
-  PostCreateInput,
-  PostUpdateInput,
-  PageCreateInput,
-  PageUpdateInput,
-  CategoryCreateInput,
-  CategoryUpdateInput,
-  TagCreateInput,
-  TagUpdateInput,
-} from '.keystone/types'
+import { Lists } from '.keystone/types'
 import { isAdmin, isAdminOrPerson, isPerson, isUser } from './validation'
 import {
   contentField,
@@ -23,7 +13,6 @@ import {
   timestampFields,
   viewsCountField,
 } from './fields'
-import { slugResolveInput } from './hooks'
 
 /**
  * Lists
@@ -141,9 +130,6 @@ export const lists: Lists = {
         many: true,
       }),
     },
-    hooks: {
-      resolveInput: slugResolveInput<PostCreateInput | PostUpdateInput, Lists.Post.Item>,
-    },
   }),
   /** Page */
   Page: list({
@@ -169,9 +155,6 @@ export const lists: Lists = {
         },
       }),
     },
-    hooks: {
-      resolveInput: slugResolveInput<PageCreateInput | PageUpdateInput, Lists.Page.Item>,
-    },
   }),
   /** Category */
   Category: list({
@@ -188,9 +171,6 @@ export const lists: Lists = {
       posts: relationship({ ref: 'Post.category', many: true }),
       tags: relationship({ ref: 'Tag.category', many: true }),
     },
-    hooks: {
-      resolveInput: slugResolveInput<CategoryCreateInput | CategoryUpdateInput, Lists.Category.Item>,
-    },
   }),
   /** Tag */
   Tag: list({
@@ -200,9 +180,6 @@ export const lists: Lists = {
       ...timestampFields,
       category: relationship({ ref: 'Category.tags' }),
       posts: relationship({ ref: 'Post.tags', many: true }),
-    },
-    hooks: {
-      resolveInput: slugResolveInput<TagCreateInput | TagUpdateInput, Lists.Tag.Item>,
     },
   }),
 }

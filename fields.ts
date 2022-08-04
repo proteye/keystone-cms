@@ -1,8 +1,25 @@
 import { integer, text, timestamp, select, image } from '@keystone-6/core/fields'
 import { document } from '@keystone-6/fields-document'
+import slugify from 'slugify'
 import { mainConfig } from './config'
 
-export const slugField = text({ defaultValue: '', isIndexed: 'unique', db: { isNullable: false } })
+export const slugField = text({
+  defaultValue: '',
+  isIndexed: 'unique',
+  db: { isNullable: false },
+  hooks: {
+    resolveInput: ({ resolvedData, fieldKey, item }) => {
+      const { slug } = resolvedData
+      const title = resolvedData.title ?? item?.title ?? resolvedData.name ?? item?.name ?? ''
+
+      if (slug === '') {
+        return slugify(title, { lower: true })
+      }
+
+      return resolvedData[fieldKey]
+    },
+  },
+})
 
 export const imageField = image({ storage: mainConfig.storage.localImages })
 
