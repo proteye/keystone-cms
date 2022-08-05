@@ -6,3 +6,4 @@ keystone.db
 .env
 public/images
 .DS_Store
+import_data
