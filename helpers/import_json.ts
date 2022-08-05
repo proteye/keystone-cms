@@ -15,8 +15,9 @@ type CategoryProps = {
   name: string
   slug: string
   description: string
-  seoTitle: string
-  seoDescription: string
+  status?: 'draft' | 'published'
+  seoTitle?: string
+  seoDescription?: string
   seoKeywords?: string
 }
 
@@ -26,10 +27,25 @@ type TagProps = {
   category: { id: string }
 }
 
+type ImageProps = {
+  id: string
+  extension: string
+  filesize: number
+}
+
+type PageProps = {
+  title: string
+  slug: string
+  imageAlt: string
+  content: string
+  status?: 'draft' | 'published'
+  author: string
+}
+
 type PostProps = {
   title: string
-  status: 'draft' | 'published'
-  publishDate: string
+  status?: 'draft' | 'published'
+  publishDate?: string
   author: string
   content: string
 }

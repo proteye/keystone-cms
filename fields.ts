@@ -60,7 +60,19 @@ export const authorField = (ref: string) =>
     },
   })
 
-export const imageField = image({ storage: mainConfig.storage.localImages })
+export const imageField = relationship({
+  ref: 'Image',
+  ui: {
+    displayMode: 'cards',
+    cardFields: ['image', 'altText'],
+    inlineEdit: { fields: ['name', 'type', 'altText', 'image'] },
+    linkToItem: false,
+    inlineConnect: false,
+    inlineCreate: { fields: ['altText', 'image'] },
+  },
+})
+
+export const imageStorageField = image({ storage: mainConfig.storage.localImages })
 
 export const imageAltField = text({ defaultValue: '', validation: { length: { max: 255 } } })
 

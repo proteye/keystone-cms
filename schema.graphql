@@ -250,8 +250,7 @@ type Post {
   slug: String
   brief: String
   content: Post_content_Document
-  image: ImageFieldOutput
-  imageAlt: String
+  image: Image
   status: String
   commentStatus: String
   order: Int
@@ -291,7 +290,7 @@ input PostWhereInput {
   title: StringFilter
   slug: StringFilter
   brief: StringFilter
-  imageAlt: StringFilter
+  image: ImageWhereInput
   status: StringNullableFilter
   commentStatus: StringNullableFilter
   order: IntNullableFilter
@@ -330,7 +329,6 @@ input PostOrderByInput {
   title: OrderDirection
   slug: OrderDirection
   brief: OrderDirection
-  imageAlt: OrderDirection
   status: OrderDirection
   commentStatus: OrderDirection
   order: OrderDirection
@@ -349,8 +347,7 @@ input PostUpdateInput {
   slug: String
   brief: String
   content: JSON
-  image: ImageFieldInput
-  imageAlt: String
+  image: ImageRelateToOneForUpdateInput
   status: String
   commentStatus: String
   order: Int
@@ -365,6 +362,12 @@ input PostUpdateInput {
   author: UserRelateToOneForUpdateInput
   category: CategoryRelateToOneForUpdateInput
   tags: TagRelateToManyForUpdateInput
+}
+
+input ImageRelateToOneForUpdateInput {
+  create: ImageCreateInput
+  connect: ImageWhereUniqueInput
+  disconnect: Boolean
 }
 
 input UserRelateToOneForUpdateInput {
@@ -396,8 +399,7 @@ input PostCreateInput {
   slug: String
   brief: String
   content: JSON
-  image: ImageFieldInput
-  imageAlt: String
+  image: ImageRelateToOneForCreateInput
   status: String
   commentStatus: String
   order: Int
@@ -412,6 +414,11 @@ input PostCreateInput {
   author: UserRelateToOneForCreateInput
   category: CategoryRelateToOneForCreateInput
   tags: TagRelateToManyForCreateInput
+}
+
+input ImageRelateToOneForCreateInput {
+  create: ImageCreateInput
+  connect: ImageWhereUniqueInput
 }
 
 input UserRelateToOneForCreateInput {
@@ -434,8 +441,7 @@ type Page {
   title: String
   slug: String
   content: Page_content_Document
-  image: ImageFieldOutput
-  imageAlt: String
+  image: Image
   status: String
   order: Int
   seoTitle: String
@@ -463,7 +469,7 @@ input PageWhereInput {
   id: IDFilter
   title: StringFilter
   slug: StringFilter
-  imageAlt: StringFilter
+  image: ImageWhereInput
   status: StringNullableFilter
   order: IntNullableFilter
   seoTitle: StringFilter
@@ -479,7 +485,6 @@ input PageOrderByInput {
   id: OrderDirection
   title: OrderDirection
   slug: OrderDirection
-  imageAlt: OrderDirection
   status: OrderDirection
   order: OrderDirection
   seoTitle: OrderDirection
@@ -494,8 +499,7 @@ input PageUpdateInput {
   title: String
   slug: String
   content: JSON
-  image: ImageFieldInput
-  imageAlt: String
+  image: ImageRelateToOneForUpdateInput
   status: String
   order: Int
   seoTitle: String
@@ -516,8 +520,7 @@ input PageCreateInput {
   title: String
   slug: String
   content: JSON
-  image: ImageFieldInput
-  imageAlt: String
+  image: ImageRelateToOneForCreateInput
   status: String
   order: Int
   seoTitle: String
@@ -534,8 +537,7 @@ type Category {
   name: String
   slug: String
   description: String
-  image: ImageFieldOutput
-  imageAlt: String
+  image: Image
   status: String
   order: Int
   seoTitle: String
@@ -572,7 +574,7 @@ input CategoryWhereInput {
   name: StringFilter
   slug: StringFilter
   description: StringFilter
-  imageAlt: StringFilter
+  image: ImageWhereInput
   status: StringNullableFilter
   order: IntNullableFilter
   seoTitle: StringFilter
@@ -589,7 +591,6 @@ input CategoryOrderByInput {
   name: OrderDirection
   slug: OrderDirection
   description: OrderDirection
-  imageAlt: OrderDirection
   status: OrderDirection
   order: OrderDirection
   seoTitle: OrderDirection
@@ -603,8 +604,7 @@ input CategoryUpdateInput {
   name: String
   slug: String
   description: String
-  image: ImageFieldInput
-  imageAlt: String
+  image: ImageRelateToOneForUpdateInput
   status: String
   order: Int
   seoTitle: String
@@ -625,8 +625,7 @@ input CategoryCreateInput {
   name: String
   slug: String
   description: String
-  image: ImageFieldInput
-  imageAlt: String
+  image: ImageRelateToOneForCreateInput
   status: String
   order: Int
   seoTitle: String
@@ -703,6 +702,54 @@ input TagCreateInput {
   posts: PostRelateToManyForCreateInput
 }
 
+type Image {
+  id: ID!
+  name: String
+  type: String
+  altText: String
+  image: ImageFieldOutput
+}
+
+input ImageWhereUniqueInput {
+  id: ID
+}
+
+input ImageWhereInput {
+  AND: [ImageWhereInput!]
+  OR: [ImageWhereInput!]
+  NOT: [ImageWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  type: StringFilter
+  altText: StringFilter
+}
+
+input ImageOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  type: OrderDirection
+  altText: OrderDirection
+}
+
+input ImageUpdateInput {
+  name: String
+  type: String
+  altText: String
+  image: ImageFieldInput
+}
+
+input ImageUpdateArgs {
+  where: ImageWhereUniqueInput!
+  data: ImageUpdateInput!
+}
+
+input ImageCreateInput {
+  name: String
+  type: String
+  altText: String
+  image: ImageFieldInput
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -745,6 +792,12 @@ type Mutation {
   updateTags(data: [TagUpdateArgs!]!): [Tag]
   deleteTag(where: TagWhereUniqueInput!): Tag
   deleteTags(where: [TagWhereUniqueInput!]!): [Tag]
+  createImage(data: ImageCreateInput!): Image
+  createImages(data: [ImageCreateInput!]!): [Image]
+  updateImage(where: ImageWhereUniqueInput!, data: ImageUpdateInput!): Image
+  updateImages(data: [ImageUpdateArgs!]!): [Image]
+  deleteImage(where: ImageWhereUniqueInput!): Image
+  deleteImages(where: [ImageWhereUniqueInput!]!): [Image]
   endSession: Boolean!
   authenticateUserWithPassword(
     email: String!
@@ -816,6 +869,14 @@ type Query {
   ): [Tag!]
   tag(where: TagWhereUniqueInput!): Tag
   tagsCount(where: TagWhereInput! = {}): Int
+  images(
+    where: ImageWhereInput! = {}
+    orderBy: [ImageOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Image!]
+  image(where: ImageWhereUniqueInput!): Image
+  imagesCount(where: ImageWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }

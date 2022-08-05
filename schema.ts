@@ -7,6 +7,7 @@ import {
   contentField,
   imageAltField,
   imageField,
+  imageStorageField,
   orderField,
   seoFields,
   slugField,
@@ -48,7 +49,7 @@ export const lists: Lists = {
           update: isPerson,
         },
       }),
-      avatar: imageField,
+      avatar: imageStorageField,
       isAdmin: checkbox({
         defaultValue: false,
         access: {
@@ -84,7 +85,6 @@ export const lists: Lists = {
       brief: text({ ui: { displayMode: 'textarea' } }),
       content: contentField,
       image: imageField,
-      imageAlt: imageAltField,
       status: statusField,
       commentStatus: select({
         options: [
@@ -134,7 +134,6 @@ export const lists: Lists = {
       slug: slugField,
       content: contentField,
       image: imageField,
-      imageAlt: imageAltField,
       status: statusField,
       order: orderField,
       ...seoFields,
@@ -155,7 +154,6 @@ export const lists: Lists = {
       slug: slugField,
       description: text({ ui: { displayMode: 'textarea' } }),
       image: imageField,
-      imageAlt: imageAltField,
       status: statusField,
       order: orderField,
       ...seoFields,
@@ -188,6 +186,33 @@ export const lists: Lists = {
     ui: {
       listView: {
         initialColumns: ['name', 'slug', 'category'],
+      },
+    },
+  }),
+  /** Image */
+  Image: list({
+    fields: {
+      name: text({ defaultValue: '' }),
+      type: text({ defaultValue: 'unknown' }),
+      altText: imageAltField,
+      image: imageStorageField,
+    },
+    hooks: {
+      resolveInput: async ({ resolvedData, item }) => {
+        const { name, image } = resolvedData
+        const imageId = image.id ?? item?.image_id
+        const origFilename = imageId ? imageId.split('-').slice(0, -1).join('-') : ''
+
+        if (name === '') {
+          resolvedData.name = origFilename || item?.name
+        }
+
+        return resolvedData
+      },
+    },
+    ui: {
+      listView: {
+        initialColumns: ['name', 'type', 'altText', 'image'],
       },
     },
   }),

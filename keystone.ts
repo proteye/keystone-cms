@@ -3,6 +3,7 @@ import { lists } from './schema'
 import { withAuth, session } from './auth'
 import { mainConfig } from './config'
 import { importMongoJson, importMysqlJson } from './helpers/import_json'
+import { transformFilename } from './helpers/transformFilename'
 
 export default withAuth(
   config({
@@ -30,6 +31,7 @@ export default withAuth(
           path: '/images',
         },
         storagePath: 'public/images',
+        transformName: transformFilename,
       },
     },
     lists,
