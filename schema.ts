@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { text, relationship, password, timestamp, select, checkbox } from '@keystone-6/core/fields'
-import { Lists } from '.keystone/types'
+import { Lists, ImageUpdateInput } from '.keystone/types'
 import { isAdmin, isAdminOrPerson, isPerson, isUser } from './validation'
 import {
   authorField,
@@ -15,6 +15,7 @@ import {
   timestampFields,
   viewsCountField,
 } from './fields'
+import { IImageFieldInput } from './types'
 
 /**
  * Lists
@@ -193,18 +194,18 @@ export const lists: Lists = {
   Image: list({
     fields: {
       name: text({ defaultValue: '' }),
-      type: text({ defaultValue: 'unknown' }),
+      type: text({ defaultValue: '' }),
       altText: imageAltField,
       image: imageStorageField,
     },
     hooks: {
       resolveInput: async ({ resolvedData, item }) => {
         const { name, image } = resolvedData
-        const imageId = image.id ?? item?.image_id
+        const imageId = (image as IImageFieldInput).id ?? item?.image_id
         const origFilename = imageId ? imageId.split('-').slice(0, -1).join('-') : ''
 
         if (name === '') {
-          resolvedData.name = origFilename || item?.name
+          return { ...resolvedData, name: origFilename || item?.name }
         }
 
         return resolvedData

@@ -62,11 +62,25 @@ export const authorField = (ref: string) =>
 
 export const imageField = relationship({
   ref: 'Image',
+  hooks: {
+    beforeOperation: async ({ resolvedData, listKey, context }) => {
+      const imageId = resolvedData?.image?.connect?.id
+
+      if (imageId) {
+        context.query.Image.updateOne({
+          where: { id: imageId },
+          data: {
+            type: listKey,
+          },
+        })
+      }
+    },
+  },
   ui: {
     displayMode: 'cards',
-    cardFields: ['image', 'altText'],
-    inlineEdit: { fields: ['name', 'type', 'altText', 'image'] },
-    linkToItem: false,
+    cardFields: ['altText', 'image'],
+    inlineEdit: { fields: ['altText', 'image'] },
+    linkToItem: true,
     inlineConnect: false,
     inlineCreate: { fields: ['altText', 'image'] },
   },

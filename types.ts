@@ -28,3 +28,11 @@ export interface IHookItemData {
   name?: string
   slug: string
 }
+
+export interface IImageFieldInput {
+  id?: string
+  extension?: string
+  filesize?: number
+  height?: number
+  width?: number
+}
