@@ -1,6 +1,6 @@
 import { list } from '@keystone-6/core'
 import { text, relationship, password, timestamp, select, checkbox } from '@keystone-6/core/fields'
-import { Lists, ImageUpdateInput } from '.keystone/types'
+import { Lists } from '.keystone/types'
 import { isAdmin, isAdminOrPerson, isPerson, isUser } from './validation'
 import {
   authorField,

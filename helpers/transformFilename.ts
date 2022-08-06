@@ -1,8 +1,9 @@
 import cuid from 'cuid'
 import slugify from 'slugify'
+import { parseFilename } from './parseFilename'
 
 export const transformFilename = (fullFilename: string) => {
-  const filename = fullFilename.split('.').slice(0, -1).join('.')
+  const { filename } = parseFilename(fullFilename)
   const safeFilename = slugify(filename, { replacement: '-' })
   const id = cuid()
 

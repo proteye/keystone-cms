@@ -45,6 +45,10 @@ export const authorField = (ref: string) =>
     },
     hooks: {
       resolveInput: ({ resolvedData, fieldKey, operation, context }) => {
+        if (!context.session) {
+          return resolvedData[fieldKey]
+        }
+
         const { id, isAdmin } = context.session.data
 
         if (

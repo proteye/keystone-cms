@@ -1,5 +1,8 @@
 import { readFileSync } from 'fs'
 import { BaseKeystoneTypeInfo, KeystoneContext } from '@keystone-6/core/types'
+import { Scalars } from '.keystone/types'
+import { IImageFieldInput } from '../types'
+import { parseFilename } from './parseFilename'
 
 const IMPORT_DIR = './import_data'
 
@@ -15,6 +18,7 @@ type CategoryProps = {
   name: string
   slug: string
   description: string
+  image?: { id: string }
   status?: 'draft' | 'published'
   seoTitle?: string
   seoDescription?: string
@@ -24,30 +28,44 @@ type CategoryProps = {
 type TagProps = {
   name: string
   slug: string
-  category: { id: string }
+  category?: { id: string }
 }
 
 type ImageProps = {
-  id: string
-  extension: string
-  filesize: number
+  name: string
+  type: string
+  altText: string
+  image: IImageFieldInput
 }
 
 type PageProps = {
   title: string
   slug: string
-  imageAlt: string
-  content: string
-  status?: 'draft' | 'published'
-  author: string
+  content: Scalars['JSON'] | null // [{"type":"paragraph","children":[{"text":""}]}]
+  status: 'draft' | 'published'
+  image?: { id: string }
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
+  viewsCount?: number
+  author?: { id: string }
 }
 
 type PostProps = {
   title: string
+  slug: string
+  brief: string
+  content: Scalars['JSON'] | null // [{"type":"paragraph","children":[{"text":""}]}]
+  publishDate: number
+  image?: { id: string }
   status?: 'draft' | 'published'
-  publishDate?: string
-  author: string
-  content: string
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
+  viewsCount?: number
+  category?: { id: string }
+  tags?: [{ id: string }]
+  author?: { id: string }
 }
 
 const createUser = async (context: KeystoneContext<BaseKeystoneTypeInfo>, userData: UserProps) => {
@@ -90,12 +108,48 @@ const createTag = async (context: KeystoneContext<BaseKeystoneTypeInfo>, tagData
 
   if (!tag) {
     return await context.query.Tag.createOne({
-      data: { ...tagData, category: { connect: { id: tagData.category.id } } },
+      data: { ...tagData, category: tagData.category ? { connect: { id: tagData.category.id } } : undefined },
       query: 'id slug',
     })
   }
 
   return tag
+}
+
+const createImage = async (context: KeystoneContext<BaseKeystoneTypeInfo>, imageData: ImageProps) => {
+  const image = await context.query.Image.findOne({
+    where: { image_id: imageData.image.id },
+    query: 'id',
+  })
+
+  if (!image) {
+    return await context.query.Image.createOne({
+      data: imageData,
+      query: 'id',
+    })
+  }
+
+  return image
+}
+
+const createPage = async (context: KeystoneContext<BaseKeystoneTypeInfo>, pageData: PageProps) => {
+  const page = await context.query.Page.findOne({
+    where: { slug: pageData.slug },
+    query: 'id slug',
+  })
+
+  if (!page) {
+    return await context.query.Page.createOne({
+      data: {
+        ...pageData,
+        image: pageData.image ? { connect: { id: pageData.image.id } } : undefined,
+        author: pageData.author ? { connect: { id: pageData.author.id } } : undefined,
+      },
+      query: 'id slug',
+    })
+  }
+
+  return page
 }
 
 export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeInfo>) => {
@@ -140,8 +194,8 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
   const addedTags = []
 
   for (const tag of tags) {
-    const oldCategory = categories.find((item: { _id: { $oid: string } }) => tag.category.$oid === item._id.$oid)
-    const category = addedCategories.find(({ slug }) => oldCategory.slug === slug)
+    const categoryOld = categories.find((item: { _id: { $oid: string } }) => tag.category.$oid === item._id.$oid)
+    const category = addedCategories.find(({ slug }) => categoryOld.slug === slug)
     const preparedTag = {
       name: tag.name,
       slug: tag.slug,
@@ -149,6 +203,38 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
     }
     const result = await createTag(context, preparedTag)
     addedTags.push(result)
+  }
+
+  console.log(`📄 Adding pages...`)
+  data = readFileSync(`${importDir}/page.json`, 'utf8')
+  const pages = JSON.parse(data)
+
+  for (const page of pages) {
+    const imageOld = page.image
+    const { filename: id, extension } = parseFilename(imageOld?.filename)
+    let addedImage = undefined
+    if (imageOld) {
+      const preparedImage = {
+        name: id,
+        type: 'Page',
+        altText: page.imageAlt ?? '',
+        image: { id, extension, filesize: imageOld.size },
+      }
+      addedImage = await createImage(context, preparedImage)
+    }
+    const preparedPage: PageProps = {
+      title: page.title,
+      slug: page.slug,
+      content: [{ type: 'paragraph', children: [{ text: '' }] }], //page.content,
+      image: addedImage ? { id: addedImage.id } : undefined,
+      status: 'published',
+      seoTitle: page.seo.title,
+      seoDescription: page.seo.description,
+      seoKeywords: page.seo.keywords,
+      viewsCount: page.viewsCount,
+      author: { id: addedUsers[0].id },
+    }
+    await createPage(context, preparedPage)
   }
 
   //   console.log(`📝 Adding posts...`)
