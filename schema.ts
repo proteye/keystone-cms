@@ -195,6 +195,11 @@ export const lists: Lists = {
     fields: {
       name: text({ defaultValue: '' }),
       type: text({ defaultValue: '' }),
+      filename: text({
+        isIndexed: 'unique',
+        db: { isNullable: true },
+        ui: { createView: { fieldMode: 'hidden' }, itemView: { fieldMode: 'read' } },
+      }),
       altText: imageAltField,
       image: imageStorageField,
     },
@@ -202,13 +207,15 @@ export const lists: Lists = {
       resolveInput: async ({ resolvedData, item }) => {
         const { name, image } = resolvedData
         const imageId = (image as IImageFieldInput).id ?? item?.image_id
-        const origFilename = imageId ? imageId.split('-').slice(0, -1).join('-') : ''
+        const imageExt = (image as IImageFieldInput).extension ?? item?.image_extension
+        const origFilename = imageId ? imageId.split('-').slice(0, -1).join('-') : 'unknown'
+        const filename = imageId ? `${imageId}.${imageExt}` : null
 
         if (name === '') {
-          return { ...resolvedData, name: origFilename || item?.name }
+          return { ...resolvedData, name: origFilename || item?.name, filename: filename || item?.filename }
         }
 
-        return resolvedData
+        return { ...resolvedData, filename }
       },
     },
     ui: {

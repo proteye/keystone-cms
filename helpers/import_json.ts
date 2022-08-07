@@ -8,6 +8,11 @@ const IMPORT_DIR = './import_data'
 
 const DEFAULT_PASSWORD = 'qwerty12345'
 
+type TDefaultResult = {
+  id: string
+  slug: string
+}
+
 type UserProps = {
   name: string
   email: string
@@ -34,6 +39,7 @@ type TagProps = {
 type ImageProps = {
   name: string
   type: string
+  filename: string
   altText: string
   image: IImageFieldInput
 }
@@ -43,11 +49,11 @@ type PageProps = {
   slug: string
   content: Scalars['JSON'] | null // [{"type":"paragraph","children":[{"text":""}]}]
   status: 'draft' | 'published'
-  image?: { id: string }
   seoTitle?: string
   seoDescription?: string
   seoKeywords?: string
   viewsCount?: number
+  image?: { id: string }
   author?: { id: string }
 }
 
@@ -56,16 +62,16 @@ type PostProps = {
   slug: string
   brief: string
   content: Scalars['JSON'] | null // [{"type":"paragraph","children":[{"text":""}]}]
-  publishDate: number
-  image?: { id: string }
-  status?: 'draft' | 'published'
+  publishDate: string
+  status: 'draft' | 'published'
   seoTitle?: string
   seoDescription?: string
   seoKeywords?: string
   viewsCount?: number
-  category?: { id: string }
-  tags?: [{ id: string }]
+  image?: { id: string }
   author?: { id: string }
+  category?: { id: string }
+  tags?: { id: string }[]
 }
 
 const createUser = async (context: KeystoneContext<BaseKeystoneTypeInfo>, userData: UserProps) => {
@@ -118,15 +124,26 @@ const createTag = async (context: KeystoneContext<BaseKeystoneTypeInfo>, tagData
 
 const createImage = async (context: KeystoneContext<BaseKeystoneTypeInfo>, imageData: ImageProps) => {
   const image = await context.query.Image.findOne({
-    where: { image_id: imageData.image.id },
-    query: 'id',
+    where: { filename: imageData.filename },
+    query: 'id filename',
   })
 
   if (!image) {
-    return await context.query.Image.createOne({
-      data: imageData,
-      query: 'id',
-    })
+    // return await context.query.Image.createOne({
+    //   data: imageData,
+    //   query: 'id filename',
+    // })
+    const { image } = imageData
+    const data = {
+      ...imageData,
+      image: undefined,
+      image_id: image.id,
+      image_extension: image.extension,
+      image_filesize: image.filesize,
+      image_width: image.width,
+      image_height: image.height,
+    }
+    return await context.prisma.image.create({ data })
   }
 
   return image
@@ -150,6 +167,28 @@ const createPage = async (context: KeystoneContext<BaseKeystoneTypeInfo>, pageDa
   }
 
   return page
+}
+
+const createPost = async (context: KeystoneContext<BaseKeystoneTypeInfo>, postData: PostProps) => {
+  const post = await context.query.Post.findOne({
+    where: { slug: postData.slug },
+    query: 'id slug',
+  })
+
+  if (!post) {
+    return await context.query.Post.createOne({
+      data: {
+        ...postData,
+        image: postData.image ? { connect: { id: postData.image.id } } : undefined,
+        author: postData.author ? { connect: { id: postData.author.id } } : undefined,
+        category: postData.category ? { connect: { id: postData.category.id } } : undefined,
+        tags: postData.tags ? { connect: postData.tags } : undefined,
+      },
+      query: 'id slug',
+    })
+  }
+
+  return post
 }
 
 export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeInfo>) => {
@@ -191,7 +230,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
   console.log(`📂 Adding tags...`)
   data = readFileSync(`${importDir}/tag.json`, 'utf8')
   const tags = JSON.parse(data)
-  const addedTags = []
+  const addedTags: { id: string; slug: string }[] = []
 
   for (const tag of tags) {
     const categoryOld = categories.find((item: { _id: { $oid: string } }) => tag.category.$oid === item._id.$oid)
@@ -199,9 +238,9 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
     const preparedTag = {
       name: tag.name,
       slug: tag.slug,
-      category: { id: category?.id },
+      category: category ? { id: category.id } : undefined,
     }
-    const result = await createTag(context, preparedTag)
+    const result = (await createTag(context, preparedTag)) as TDefaultResult
     addedTags.push(result)
   }
 
@@ -211,12 +250,13 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
 
   for (const page of pages) {
     const imageOld = page.image
-    const { filename: id, extension } = parseFilename(imageOld?.filename)
     let addedImage = undefined
     if (imageOld) {
+      const { filename: id, extension } = parseFilename(imageOld.filename)
       const preparedImage = {
         name: id,
         type: 'Page',
+        filename: imageOld.filename,
         altText: page.imageAlt ?? '',
         image: { id, extension, filesize: imageOld.size },
       }
@@ -226,21 +266,64 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
       title: page.title,
       slug: page.slug,
       content: [{ type: 'paragraph', children: [{ text: '' }] }], //page.content,
-      image: addedImage ? { id: addedImage.id } : undefined,
       status: 'published',
       seoTitle: page.seo.title,
       seoDescription: page.seo.description,
       seoKeywords: page.seo.keywords,
       viewsCount: page.viewsCount,
+      image: addedImage ? { id: addedImage.id } : undefined,
       author: { id: addedUsers[0].id },
     }
     await createPage(context, preparedPage)
   }
 
-  //   console.log(`📝 Adding posts...`)
-  //   for (const post of posts) {
-  //     await createPost(post)
-  //   }
+  console.log(`📝 Adding posts...`)
+  data = readFileSync(`${importDir}/post.json`, 'utf8')
+  const posts = JSON.parse(data)
+
+  for (const post of posts) {
+    const imageOld = post.image
+    let addedImage = undefined
+    if (imageOld) {
+      const { filename: id, extension } = parseFilename(imageOld.filename)
+      const preparedImage = {
+        name: id,
+        type: 'Post',
+        filename: imageOld.filename,
+        altText: post.imageAlt ?? '',
+        image: { id, extension, filesize: imageOld.size },
+      }
+      addedImage = await createImage(context, preparedImage)
+    }
+    const authorOld = users.find((item: { _id: { $oid: string } }) => post.author.$oid === item._id.$oid)
+    const author = addedUsers.find(({ email }) => authorOld.email === email)
+    const categoryOld = categories.find((item: { _id: { $oid: string } }) => post.category.$oid === item._id.$oid)
+    const category = addedCategories.find(({ slug }) => categoryOld.slug === slug)
+    const tagsOld: { slug: string }[] = post.tags.map(({ $oid }: { $oid: string }) =>
+      tags.find((item: { _id: { $oid: string } }) => $oid === item._id.$oid),
+    )
+    const preparedTags = tagsOld.map(({ slug: slugOld }) => {
+      const tag = addedTags.find(({ slug }) => slugOld === slug)
+      return { id: tag?.id ?? '' }
+    })
+    const preparedPost: PostProps = {
+      title: post.title,
+      slug: post.slug,
+      brief: post.content.brief,
+      content: [{ type: 'paragraph', children: [{ text: '' }] }], //post.content,
+      publishDate: new Date(post.publishedDate.$date).toISOString(),
+      status: 'published',
+      seoTitle: post.seo.title,
+      seoDescription: post.seo.description,
+      seoKeywords: post.seo.keywords,
+      viewsCount: post.viewsCount,
+      image: addedImage ? { id: addedImage.id } : undefined,
+      author: author ? { id: author.id } : undefined,
+      category: category ? { id: category.id } : undefined,
+      tags: preparedTags,
+    }
+    await createPost(context, preparedPost)
+  }
 
   console.log(`✅ JSON-data inserted`)
   console.log(`👋 Please start the process with \`yarn dev\` or \`npm run dev\``)

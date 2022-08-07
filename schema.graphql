@@ -706,12 +706,14 @@ type Image {
   id: ID!
   name: String
   type: String
+  filename: String
   altText: String
   image: ImageFieldOutput
 }
 
 input ImageWhereUniqueInput {
   id: ID
+  filename: String
 }
 
 input ImageWhereInput {
@@ -721,6 +723,7 @@ input ImageWhereInput {
   id: IDFilter
   name: StringFilter
   type: StringFilter
+  filename: StringNullableFilter
   altText: StringFilter
 }
 
@@ -728,12 +731,14 @@ input ImageOrderByInput {
   id: OrderDirection
   name: OrderDirection
   type: OrderDirection
+  filename: OrderDirection
   altText: OrderDirection
 }
 
 input ImageUpdateInput {
   name: String
   type: String
+  filename: String
   altText: String
   image: ImageFieldInput
 }
@@ -746,6 +751,7 @@ input ImageUpdateArgs {
 input ImageCreateInput {
   name: String
   type: String
+  filename: String
   altText: String
   image: ImageFieldInput
 }

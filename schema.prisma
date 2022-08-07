@@ -122,6 +122,7 @@ model Image {
   id                  String     @id @default(cuid())
   name                String     @default("")
   type                String     @default("")
+  filename            String?    @unique
   altText             String     @default("")
   image_filesize      Int?
   image_extension     String?
