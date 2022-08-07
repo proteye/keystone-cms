@@ -7,6 +7,8 @@ import { parseFilename } from './parseFilename'
 const IMPORT_DIR = './import_data'
 
 const DEFAULT_PASSWORD = 'qwerty12345'
+const DEFAULT_WIDTH = 800
+const DEFAULT_HEIGHT = 600
 
 type TDefaultResult = {
   id: string
@@ -129,19 +131,15 @@ const createImage = async (context: KeystoneContext<BaseKeystoneTypeInfo>, image
   })
 
   if (!image) {
-    // return await context.query.Image.createOne({
-    //   data: imageData,
-    //   query: 'id filename',
-    // })
-    const { image } = imageData
+    const { image: imageProps } = imageData
     const data = {
       ...imageData,
       image: undefined,
-      image_id: image.id,
-      image_extension: image.extension,
-      image_filesize: image.filesize,
-      image_width: image.width,
-      image_height: image.height,
+      image_id: imageProps.id,
+      image_extension: imageProps.extension,
+      image_filesize: imageProps.filesize,
+      image_width: imageProps.width ?? DEFAULT_WIDTH,
+      image_height: imageProps.height ?? DEFAULT_HEIGHT,
     }
     return await context.prisma.image.create({ data })
   }
@@ -265,7 +263,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
     const preparedPage: PageProps = {
       title: page.title,
       slug: page.slug,
-      content: [{ type: 'paragraph', children: [{ text: '' }] }], //page.content,
+      content: [{ type: 'paragraph', children: [{ text: '' }] }], // page.content.extended,
       status: 'published',
       seoTitle: page.seo.title,
       seoDescription: page.seo.description,
@@ -310,7 +308,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
       title: post.title,
       slug: post.slug,
       brief: post.content.brief,
-      content: [{ type: 'paragraph', children: [{ text: '' }] }], //post.content,
+      content: [{ type: 'paragraph', children: [{ text: '' }] }], // post.content.extended,
       publishDate: new Date(post.publishedDate.$date).toISOString(),
       status: 'published',
       seoTitle: post.seo.title,
