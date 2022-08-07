@@ -3,10 +3,12 @@ import { BaseKeystoneTypeInfo, KeystoneContext } from '@keystone-6/core/types'
 import { Scalars } from '.keystone/types'
 import { IImageFieldInput } from '../types'
 import { parseFilename } from './parseFilename'
+import { removeHtmlTags } from './removeHtmlTags'
+import { convertHtmlToDocument } from './convertHtmlToDocument'
 
 const IMPORT_DIR = './import_data'
 
-const DEFAULT_PASSWORD = 'qwerty12345'
+const DEFAULT_PASSWORD = 'qwer1234'
 const DEFAULT_WIDTH = 800
 const DEFAULT_HEIGHT = 600
 
@@ -217,7 +219,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
     const preparedCategory = {
       name: category.name,
       slug: category.slug,
-      description: category.description,
+      description: removeHtmlTags(category.description),
       seoTitle: category.seo.title,
       seoDescription: category.seo.description,
     }
@@ -263,7 +265,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
     const preparedPage: PageProps = {
       title: page.title,
       slug: page.slug,
-      content: [{ type: 'paragraph', children: [{ text: '' }] }], // page.content.extended,
+      content: [{ type: 'paragraph', children: [{ text: removeHtmlTags(page.content.extended) }] }],
       status: 'published',
       seoTitle: page.seo.title,
       seoDescription: page.seo.description,
@@ -304,11 +306,12 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
       const tag = addedTags.find(({ slug }) => slugOld === slug)
       return { id: tag?.id ?? '' }
     })
+
     const preparedPost: PostProps = {
       title: post.title,
       slug: post.slug,
-      brief: post.content.brief,
-      content: [{ type: 'paragraph', children: [{ text: '' }] }], // post.content.extended,
+      brief: removeHtmlTags(post.content.brief),
+      content: convertHtmlToDocument(post.content.extended),
       publishDate: new Date(post.publishedDate.$date).toISOString(),
       status: 'published',
       seoTitle: post.seo.title,

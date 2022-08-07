@@ -27,5 +27,9 @@
   },
   "engines": {
     "node": "^14.15 || ^16.13"
+  },
+  "devDependencies": {
+    "node-html-parser": "^5.3.3",
+    "slate-hyperscript": "^0.77.0"
   }
 }
