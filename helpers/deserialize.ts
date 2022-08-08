@@ -83,10 +83,8 @@ export const deserialize = (el: TAny, markAttributes = {}) => {
       return jsx('fragment', {}, children)
     case 'br':
       return '\n'
-    case 'p':
-      return jsx('element', { type: 'paragraph' }, children)
     case 'a':
-      return jsx('element', { type: 'link', url: el.getAttribute('href') }, children)
+      return jsx('element', { type: 'link', href: el.getAttribute('href') }, children)
     default:
       return children
   }
