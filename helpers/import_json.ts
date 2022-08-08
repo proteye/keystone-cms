@@ -11,6 +11,7 @@ const IMPORT_DIR = './import_data'
 const DEFAULT_PASSWORD = 'qwer1234'
 const DEFAULT_WIDTH = 800
 const DEFAULT_HEIGHT = 600
+const DEFAULT_SIZE = 1024
 
 type TDefaultResult = {
   id: string
@@ -386,6 +387,24 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
     }
     const result = (await createTag(context, preparedTag)) as TDefaultResult
     addedTags.push(result)
+  }
+
+  console.log(`📂 Adding images...`)
+  data = readFileSync(`${importDir}/image.json`, 'utf8')
+  const images = JSON.parse(data)
+  const addedImages: { id: string; filename: string }[] = []
+
+  for (const image of images) {
+    const { filename: id, extension } = parseFilename(image.file)
+    const preparedImage = {
+      name: id,
+      type: 'Post',
+      filename: image.file,
+      altText: image.alt ?? '',
+      image: { id, extension, filesize: DEFAULT_SIZE },
+    }
+    const result = await createImage(context, preparedImage)
+    addedImages.push(result)
   }
 
   console.log(`📄 Adding pages...`)
