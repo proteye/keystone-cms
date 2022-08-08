@@ -27,8 +27,8 @@ type CategoryProps = {
   name: string
   slug: string
   description: string
+  status: 'draft' | 'published'
   image?: { id: string }
-  status?: 'draft' | 'published'
   seoTitle?: string
   seoDescription?: string
   seoKeywords?: string
@@ -102,7 +102,7 @@ const createCategory = async (context: KeystoneContext<BaseKeystoneTypeInfo>, ca
 
   if (!category) {
     return await context.query.Category.createOne({
-      data: { ...categoryData, status: 'published' },
+      data: categoryData,
       query: 'id slug',
     })
   }
@@ -216,10 +216,11 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
   const addedCategories = []
 
   for (const category of categories) {
-    const preparedCategory = {
+    const preparedCategory: CategoryProps = {
       name: category.name,
       slug: category.slug,
       description: removeHtmlTags(category.description),
+      status: 'published',
       seoTitle: category.seo.title,
       seoDescription: category.seo.description,
     }
@@ -353,39 +354,39 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
     addedUsers.push(result)
   }
 
-  // console.log(`📂 Adding categories...`)
-  // data = readFileSync(`${importDir}/category.json`, 'utf8')
-  // const categories = JSON.parse(data)
-  // const addedCategories = []
+  console.log(`📂 Adding categories...`)
+  data = readFileSync(`${importDir}/category.json`, 'utf8')
+  const categories = JSON.parse(data)
+  const addedCategories = []
 
-  // for (const category of categories) {
-  //   const preparedCategory = {
-  //     name: category.name,
-  //     slug: category.slug,
-  //     description: removeHtmlTags(category.description),
-  //     seoTitle: category.seo.title,
-  //     seoDescription: category.seo.description,
-  //   }
-  //   const result = await createCategory(context, preparedCategory)
-  //   addedCategories.push(result)
-  // }
+  for (const category of categories) {
+    const preparedCategory: CategoryProps = {
+      name: category.name,
+      slug: category.slug,
+      description: removeHtmlTags(category.description),
+      status: category.status === 1 ? 'published' : 'draft',
+      seoTitle: category.meta_title,
+      seoDescription: category.meta_description,
+      seoKeywords: category.meta_keywords,
+    }
+    const result = await createCategory(context, preparedCategory)
+    addedCategories.push(result)
+  }
 
-  // console.log(`📂 Adding tags...`)
-  // data = readFileSync(`${importDir}/tag.json`, 'utf8')
-  // const tags = JSON.parse(data)
-  // const addedTags: { id: string; slug: string }[] = []
+  console.log(`📂 Adding tags...`)
+  data = readFileSync(`${importDir}/tag.json`, 'utf8')
+  const tags = JSON.parse(data)
+  const addedTags: { id: string; slug: string }[] = []
 
-  // for (const tag of tags) {
-  //   const categoryOld = categories.find((item: { _id: { $oid: string } }) => tag.category.$oid === item._id.$oid)
-  //   const category = addedCategories.find(({ slug }) => categoryOld.slug === slug)
-  //   const preparedTag = {
-  //     name: tag.name,
-  //     slug: tag.slug,
-  //     category: category ? { id: category.id } : undefined,
-  //   }
-  //   const result = (await createTag(context, preparedTag)) as TDefaultResult
-  //   addedTags.push(result)
-  // }
+  for (const tag of tags) {
+    const preparedTag = {
+      name: tag.title,
+      slug: tag.slug,
+      category: undefined,
+    }
+    const result = (await createTag(context, preparedTag)) as TDefaultResult
+    addedTags.push(result)
+  }
 
   // console.log(`📄 Adding pages...`)
   // data = readFileSync(`${importDir}/page.json`, 'utf8')
