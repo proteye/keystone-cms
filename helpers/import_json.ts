@@ -202,7 +202,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
 
   for (const user of users) {
     const preparedUser = {
-      name: `${user.name.last} ${user.name.first}`,
+      name: `${user.name.first} ${user.name.last}`,
       email: user.email,
       isAdmin: user.isAdmin,
     }
@@ -334,9 +334,141 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
 export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeInfo>) => {
   console.log(`🌱 Importing MysqlDB JSON-data`)
   const importDir = `${IMPORT_DIR}/mysql`
-  const data = readFileSync(`${importDir}/category.json`, 'utf8')
-  const jsonData = JSON.parse(data)
-  console.log('jsonData', jsonData)
+
+  console.log(`👩 Adding users...`)
+  let data = readFileSync(`${importDir}/user.json`, 'utf8')
+  const users = JSON.parse(data)
+  data = readFileSync(`${importDir}/user_profile.json`, 'utf8')
+  const userProfiles = JSON.parse(data)
+  const addedUsers = []
+
+  for (const user of users) {
+    const profile = userProfiles.find(({ user_id: userId }: { user_id: number }) => user.id === userId)
+    const preparedUser = {
+      name: profile.nick_nm,
+      email: user.email,
+      isAdmin: user.id === 1,
+    }
+    const result = await createUser(context, preparedUser)
+    addedUsers.push(result)
+  }
+
+  // console.log(`📂 Adding categories...`)
+  // data = readFileSync(`${importDir}/category.json`, 'utf8')
+  // const categories = JSON.parse(data)
+  // const addedCategories = []
+
+  // for (const category of categories) {
+  //   const preparedCategory = {
+  //     name: category.name,
+  //     slug: category.slug,
+  //     description: removeHtmlTags(category.description),
+  //     seoTitle: category.seo.title,
+  //     seoDescription: category.seo.description,
+  //   }
+  //   const result = await createCategory(context, preparedCategory)
+  //   addedCategories.push(result)
+  // }
+
+  // console.log(`📂 Adding tags...`)
+  // data = readFileSync(`${importDir}/tag.json`, 'utf8')
+  // const tags = JSON.parse(data)
+  // const addedTags: { id: string; slug: string }[] = []
+
+  // for (const tag of tags) {
+  //   const categoryOld = categories.find((item: { _id: { $oid: string } }) => tag.category.$oid === item._id.$oid)
+  //   const category = addedCategories.find(({ slug }) => categoryOld.slug === slug)
+  //   const preparedTag = {
+  //     name: tag.name,
+  //     slug: tag.slug,
+  //     category: category ? { id: category.id } : undefined,
+  //   }
+  //   const result = (await createTag(context, preparedTag)) as TDefaultResult
+  //   addedTags.push(result)
+  // }
+
+  // console.log(`📄 Adding pages...`)
+  // data = readFileSync(`${importDir}/page.json`, 'utf8')
+  // const pages = JSON.parse(data)
+
+  // for (const page of pages) {
+  //   const imageOld = page.image
+  //   let addedImage = undefined
+  //   if (imageOld) {
+  //     const { filename: id, extension } = parseFilename(imageOld.filename)
+  //     const preparedImage = {
+  //       name: id,
+  //       type: 'Page',
+  //       filename: imageOld.filename,
+  //       altText: page.imageAlt ?? '',
+  //       image: { id, extension, filesize: imageOld.size },
+  //     }
+  //     addedImage = await createImage(context, preparedImage)
+  //   }
+  //   const preparedPage: PageProps = {
+  //     title: page.title,
+  //     slug: page.slug,
+  //     content: [{ type: 'paragraph', children: [{ text: removeHtmlTags(page.content.extended) }] }],
+  //     status: 'published',
+  //     seoTitle: page.seo.title,
+  //     seoDescription: page.seo.description,
+  //     seoKeywords: page.seo.keywords,
+  //     viewsCount: page.viewsCount,
+  //     image: addedImage ? { id: addedImage.id } : undefined,
+  //     author: { id: addedUsers[0].id },
+  //   }
+  //   await createPage(context, preparedPage)
+  // }
+
+  // console.log(`📝 Adding posts...`)
+  // data = readFileSync(`${importDir}/post.json`, 'utf8')
+  // const posts = JSON.parse(data)
+
+  // for (const post of posts) {
+  //   const imageOld = post.image
+  //   let addedImage = undefined
+  //   if (imageOld) {
+  //     const { filename: id, extension } = parseFilename(imageOld.filename)
+  //     const preparedImage = {
+  //       name: id,
+  //       type: 'Post',
+  //       filename: imageOld.filename,
+  //       altText: post.imageAlt ?? '',
+  //       image: { id, extension, filesize: imageOld.size },
+  //     }
+  //     addedImage = await createImage(context, preparedImage)
+  //   }
+  //   const authorOld = users.find((item: { _id: { $oid: string } }) => post.author.$oid === item._id.$oid)
+  //   const author = addedUsers.find(({ email }) => authorOld.email === email)
+  //   const categoryOld = categories.find((item: { _id: { $oid: string } }) => post.category.$oid === item._id.$oid)
+  //   const category = addedCategories.find(({ slug }) => categoryOld.slug === slug)
+  //   const tagsOld: { slug: string }[] = post.tags.map(({ $oid }: { $oid: string }) =>
+  //     tags.find((item: { _id: { $oid: string } }) => $oid === item._id.$oid),
+  //   )
+  //   const preparedTags = tagsOld.map(({ slug: slugOld }) => {
+  //     const tag = addedTags.find(({ slug }) => slugOld === slug)
+  //     return { id: tag?.id ?? '' }
+  //   })
+
+  //   const preparedPost: PostProps = {
+  //     title: post.title,
+  //     slug: post.slug,
+  //     brief: removeHtmlTags(post.content.brief),
+  //     content: convertHtmlToDocument(post.content.extended),
+  //     publishDate: new Date(post.publishedDate.$date).toISOString(),
+  //     status: 'published',
+  //     seoTitle: post.seo.title,
+  //     seoDescription: post.seo.description,
+  //     seoKeywords: post.seo.keywords,
+  //     viewsCount: post.viewsCount,
+  //     image: addedImage ? { id: addedImage.id } : undefined,
+  //     author: author ? { id: author.id } : undefined,
+  //     category: category ? { id: category.id } : undefined,
+  //     tags: preparedTags,
+  //   }
+  //   await createPost(context, preparedPost)
+  // }
+
   console.log(`✅ JSON-data inserted`)
   console.log(`👋 Please start the process with \`yarn dev\` or \`npm run dev\``)
   process.exit()
