@@ -86,6 +86,10 @@ export const deserialize = (el: TAny, markAttributes = {}) => {
     case 'a':
       const href = el.getAttribute('href')
       return href ? jsx('element', { type: 'link', href }, children) : null
+    // case 'img':
+    //   const src = el.getAttribute('src')
+    //   const alt = el.getAttribute('alt') ?? ''
+    //   return src ? jsx('element', { type: 'image', src, alt }, children) : null
     default:
       return children
   }
