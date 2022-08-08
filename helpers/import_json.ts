@@ -388,38 +388,25 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
     addedTags.push(result)
   }
 
-  // console.log(`📄 Adding pages...`)
-  // data = readFileSync(`${importDir}/page.json`, 'utf8')
-  // const pages = JSON.parse(data)
+  console.log(`📄 Adding pages...`)
+  data = readFileSync(`${importDir}/page.json`, 'utf8')
+  const pages = JSON.parse(data)
 
-  // for (const page of pages) {
-  //   const imageOld = page.image
-  //   let addedImage = undefined
-  //   if (imageOld) {
-  //     const { filename: id, extension } = parseFilename(imageOld.filename)
-  //     const preparedImage = {
-  //       name: id,
-  //       type: 'Page',
-  //       filename: imageOld.filename,
-  //       altText: page.imageAlt ?? '',
-  //       image: { id, extension, filesize: imageOld.size },
-  //     }
-  //     addedImage = await createImage(context, preparedImage)
-  //   }
-  //   const preparedPage: PageProps = {
-  //     title: page.title,
-  //     slug: page.slug,
-  //     content: [{ type: 'paragraph', children: [{ text: removeHtmlTags(page.content.extended) }] }],
-  //     status: 'published',
-  //     seoTitle: page.seo.title,
-  //     seoDescription: page.seo.description,
-  //     seoKeywords: page.seo.keywords,
-  //     viewsCount: page.viewsCount,
-  //     image: addedImage ? { id: addedImage.id } : undefined,
-  //     author: { id: addedUsers[0].id },
-  //   }
-  //   await createPage(context, preparedPage)
-  // }
+  for (const page of pages) {
+    const preparedPage: PageProps = {
+      title: page.title,
+      slug: page.slug,
+      content: convertHtmlToDocument(page.content),
+      status: 'published',
+      seoTitle: page.meta_title,
+      seoDescription: page.meta_description,
+      seoKeywords: page.meta_keywords,
+      viewsCount: page.viewsCount ?? 0,
+      image: undefined,
+      author: { id: addedUsers[0].id },
+    }
+    await createPage(context, preparedPage)
+  }
 
   // console.log(`📝 Adding posts...`)
   // data = readFileSync(`${importDir}/post.json`, 'utf8')

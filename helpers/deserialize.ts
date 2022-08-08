@@ -47,8 +47,8 @@ type TMarkTagName = keyof typeof MARK_TAGS
  * Deserialize DOM elements
  */
 export const deserialize = (el: TAny, markAttributes = {}) => {
-  if (el.nodeType === Node.TEXT_NODE) {
-    return jsx('text', markAttributes, el.textContent)
+  if (el.nodeType === Node.TEXT_NODE && el.parentNode.rawTagName !== 'body') {
+    return !el.textContent.trim() ? null : jsx('text', markAttributes, el.textContent)
   } else if (el.nodeType !== Node.ELEMENT_NODE) {
     return null
   }
@@ -84,7 +84,8 @@ export const deserialize = (el: TAny, markAttributes = {}) => {
     case 'br':
       return '\n'
     case 'a':
-      return jsx('element', { type: 'link', href: el.getAttribute('href') }, children)
+      const href = el.getAttribute('href')
+      return href ? jsx('element', { type: 'link', href }, children) : null
     default:
       return children
   }

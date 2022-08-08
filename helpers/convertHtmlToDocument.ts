@@ -6,7 +6,7 @@ import { deserialize } from './deserialize'
  * https://docs.slatejs.org/
  */
 export const convertHtmlToDocument = (htmlString: string) => {
-  const htmlDom = parse('<body>' + htmlString.replaceAll('\r\n', '') + '</body>')
+  const htmlDom = parse('<body>' + htmlString.replaceAll('\t', '').replaceAll('\r\n', ' ') + '</body>')
 
   return deserialize(htmlDom)
 }
