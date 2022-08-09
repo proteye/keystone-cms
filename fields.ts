@@ -2,6 +2,7 @@ import { integer, text, timestamp, select, image, relationship } from '@keystone
 import { document } from '@keystone-6/fields-document'
 import slugify from 'slugify'
 import { mainConfig } from './config'
+import { componentBlocks } from './plugins/component-blocks'
 
 export const slugField = text({
   defaultValue: '',
@@ -107,6 +108,10 @@ export const contentField = document({
   ],
   links: true,
   dividers: true,
+  ui: {
+    views: require.resolve('./plugins/component-blocks'),
+  },
+  componentBlocks,
 })
 
 export const statusField = select({
