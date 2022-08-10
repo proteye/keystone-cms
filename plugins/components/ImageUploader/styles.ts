@@ -1,8 +1,30 @@
 import { css } from '@keystone-ui/core'
 
+const container = (mode = 'preview') => css`
+  display: block;
+
+  ${mode === 'preview' &&
+  css`
+    padding: 16px;
+    border: 1px dotted #e2e8f0;
+    border-radius: 8px;
+  `}
+`
+
+const inputWrapper = css`
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+
+  label {
+    font-weight: 500;
+    margin-right: 8px;
+  }
+`
+
 const textInput = css`
   width: 100%;
-  margin-bottom: 8px;
+  max-width: 450px;
   padding: 6px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -56,6 +78,8 @@ const imagePreview = css`
 `
 
 export default {
+  container,
+  inputWrapper,
   textInput,
   imageUploader,
   imagePreview,

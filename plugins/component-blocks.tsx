@@ -1,23 +1,18 @@
 import React from 'react'
 import { NotEditable, component, fields, FormField } from '@keystone-6/fields-document/component-blocks'
 import { TAny } from '../types'
-import { TImageFieldOptions, TImageFieldValue } from './types'
+import { TImageFieldData, TImageFieldOptions, TImageFieldValue } from './types'
 import { ImageUploader } from './components/ImageUploader'
 
 const customFields = {
-  image({ listKey, defaultValue = null }: TImageFieldOptions): FormField<TImageFieldValue, TImageFieldOptions> {
+  image({ listKey }: TImageFieldOptions): FormField<TImageFieldValue, TImageFieldOptions> {
     return {
       kind: 'form',
-      Input({ value, onChange, autoFocus }) {
-        return <ImageUploader listKey={listKey} defaultValue={value} onChange={onChange} />
-        // return (
-        //   <FieldContainer>
-        //     <Gallery listKey={listKey} value={value} onChange={(items) => onChange(items)} />
-        //   </FieldContainer>
-        // )
+      Input({ value, onChange }) {
+        return <ImageUploader listKey={listKey} defaultValue={value} mode="edit" onChange={onChange} />
       },
       options: { listKey },
-      defaultValue,
+      defaultValue: null,
       validate(value) {
         return typeof value === 'object'
       },
@@ -27,39 +22,33 @@ const customFields = {
 
 export const componentBlocks: TAny = {
   image: component({
-    preview: (props) => {
-      const imageSrc = props.fields.image.value?.image?.url
-      const altText = props.fields.image.value?.altText
-
-      return (
-        <NotEditable>
-          <div style={{ width: '100%' }}>
-            <img src={imageSrc} alt={altText} title={altText} />
-          </div>
-        </NotEditable>
-      )
-    },
+    preview: ({ fields }) => (
+      <NotEditable>
+        <ImageUploader
+          listKey={fields.image.options.listKey}
+          defaultValue={fields.imageRel.value?.data as TImageFieldData}
+          imageAlt={fields.imageAlt.value}
+          onChange={fields.image.onChange}
+          onImageAltChange={fields.imageAlt.onChange}
+          onRelationChange={fields.imageRel.onChange}
+        />
+      </NotEditable>
+    ),
     label: 'Image',
     schema: {
+      imageAlt: fields.text({
+        label: 'Image Alt',
+        defaultValue: '',
+      }),
       image: customFields.image({
         listKey: 'Image',
       }),
-      // capture: fields.child({
-      //   kind: 'block',
-      //   placeholder: 'Capture...',
-      //   formatting: { inlineMarks: 'inherit', softBreaks: 'inherit' },
-      //   links: 'inherit',
-      // }),
+      imageRel: fields.relationship({
+        listKey: 'Image',
+        label: 'Image Relation',
+        selection: 'id, image { url }',
+      }),
     },
-    // schema: {
-    //   content: fields.child({
-    //     kind: 'block',
-    //     placeholder: 'Quote...',
-    //     formatting: { inlineMarks: 'inherit', softBreaks: 'inherit' },
-    //     links: 'inherit',
-    //   }),
-    //   attribution: fields.child({ kind: 'inline', placeholder: 'Attribution...' }),
-    // },
-    chromeless: false,
+    chromeless: true,
   }),
 }

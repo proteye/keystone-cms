@@ -10,16 +10,10 @@ import useBase from './useBase'
 export const ImageUploader: FC<IImageUploaderProps> = (props) => {
   const { altText, imageSrc, loading, isShowLabel, isShowImage, handleAltTextChange, handleUploadChange } =
     useBase(props)
+  const { mode } = props
 
   return (
-    <div>
-      <input
-        type="text"
-        placeholder="Image Alt text..."
-        css={styles.textInput}
-        value={altText}
-        onChange={handleAltTextChange}
-      />
+    <div css={styles.container(mode)}>
       <label id="file" css={styles.imageUploader(isShowImage)}>
         {isShowLabel && <span>🖱 Click to select a file...</span>}
         {loading && <span>Loading...</span>}
@@ -30,12 +24,25 @@ export const ImageUploader: FC<IImageUploaderProps> = (props) => {
           style={{ display: 'none' }}
           onChange={handleUploadChange}
         />
-        <img src={imageSrc} css={styles.imagePreview} style={{ display: isShowImage ? 'block' : 'none' }} />
+        <img
+          src={imageSrc}
+          alt={altText}
+          css={styles.imagePreview}
+          style={{ display: isShowImage ? 'block' : 'none' }}
+        />
       </label>
+      {mode === 'preview' && (
+        <div css={styles.inputWrapper}>
+          <label>Image Alt:</label>
+          <input type="text" placeholder="" css={styles.textInput} value={altText} onChange={handleAltTextChange} />
+        </div>
+      )}
     </div>
   )
 }
 
 ImageUploader.defaultProps = {
   defaultValue: null,
+  imageAlt: '',
+  mode: 'preview',
 }
