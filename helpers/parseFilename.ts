@@ -1,11 +1,11 @@
-export const parseFilename = (fullFilename: string) => {
-  if (!fullFilename) {
-    return { filename: '', extension: '' }
+export const parseFilename = (filename: string) => {
+  if (!filename) {
+    return { name: '', extension: '' }
   }
 
-  const splittedFilename = fullFilename.split('.')
-  const filename = splittedFilename.slice(0, -1).join('.')
+  const splittedFilename = filename.split('.')
+  const name = splittedFilename.slice(0, -1).join('.')
   const extension = splittedFilename.reverse()[0]
 
-  return { filename, extension }
+  return { name, extension }
 }

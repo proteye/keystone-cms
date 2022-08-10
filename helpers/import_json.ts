@@ -256,7 +256,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
     const imageOld = page.image
     let addedImage = undefined
     if (imageOld) {
-      const { filename: id, extension } = parseFilename(imageOld.filename)
+      const { name: id, extension } = parseFilename(imageOld.filename)
       const preparedImage = {
         name: id,
         type: 'Page',
@@ -289,7 +289,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
     const imageOld = post.image
     let addedImage = undefined
     if (imageOld) {
-      const { filename: id, extension } = parseFilename(imageOld.filename)
+      const { name: id, extension } = parseFilename(imageOld.filename)
       const preparedImage = {
         name: id,
         type: 'Post',
@@ -394,10 +394,11 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
   console.log(`📂 Adding images...`)
   data = readFileSync(`${importDir}/image.json`, 'utf8')
   const images = JSON.parse(data)
-  const addedImages: { id: string; filename: string; alt: string }[] = []
+  const addedImages: { id: string; filename: string }[] = []
+  // const addedImagesMap: { [filename: string]: string } = {}
 
   for (const image of images) {
-    const { filename: id, extension } = parseFilename(image.file)
+    const { name: id, extension } = parseFilename(image.file)
     const preparedImage = {
       name: id,
       type: EImageType.DOCUMENT,
@@ -405,8 +406,9 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
       image: { id, extension, filesize: DEFAULT_SIZE },
     }
     const result = await createImage(context, preparedImage)
-    addedImages.push({ ...result, alt: image.alt ?? '' })
+    addedImages.push(result)
   }
+  const addedImagesMap = new Map(addedImages.map(({ id, filename }) => [filename, id] as [string, string]))
 
   console.log(`📄 Adding pages...`)
   data = readFileSync(`${importDir}/page.json`, 'utf8')
@@ -416,13 +418,12 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
     const preparedPage: PageProps = {
       title: page.title,
       slug: page.slug,
-      content: convertHtmlToDocument(page.content),
+      content: convertHtmlToDocument(page.content, addedImagesMap),
       status: 'published',
       seoTitle: page.meta_title,
       seoDescription: page.meta_description,
       seoKeywords: page.meta_keywords,
       viewsCount: page.viewsCount ?? 0,
-      image: undefined,
       author: { id: addedUsers[0].id },
     }
     await createPage(context, preparedPage)

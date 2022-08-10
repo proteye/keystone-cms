@@ -39,6 +39,7 @@ const MARK_TAGS = {
   code: 'code',
 }
 
+export type TImageMap = Map<string, string> // { filename: image_id }
 type TTagName = 'body' | 'br' | 'a' | 'img' | keyof typeof BLOCK_TAGS | keyof typeof MARK_TAGS
 type TBlockTagName = keyof typeof BLOCK_TAGS
 type TMarkTagName = keyof typeof MARK_TAGS
@@ -46,9 +47,9 @@ type TMarkTagName = keyof typeof MARK_TAGS
 /**
  * Deserialize DOM elements
  */
-export const deserialize = (el: TAny, markAttributes = {}) => {
+export const deserialize = (el: TAny, markAttributes = {}, imagesMap: TImageMap = new Map()) => {
   if (el.nodeType === Node.TEXT_NODE && el.parentNode.rawTagName !== 'body') {
-    return !el.textContent.trim() ? null : jsx('text', markAttributes, el.textContent)
+    return !el.textContent.trim() ? null : jsx('text', markAttributes, el.textContent.trimStart())
   } else if (el.nodeType !== Node.ELEMENT_NODE) {
     return null
   }
@@ -62,7 +63,7 @@ export const deserialize = (el: TAny, markAttributes = {}) => {
   }
 
   const children: TAny = Array.from(el.childNodes)
-    .map((node) => deserialize(node, nodeAttributes))
+    .map((node) => deserialize(node, nodeAttributes, imagesMap))
     .flat()
 
   if (children.length === 0) {
@@ -86,10 +87,35 @@ export const deserialize = (el: TAny, markAttributes = {}) => {
     case 'a':
       const href = el.getAttribute('href')
       return href ? jsx('element', { type: 'link', href }, children) : null
-    // case 'img':
-    //   const src = el.getAttribute('src')
-    //   const alt = el.getAttribute('alt') ?? ''
-    //   return src ? jsx('element', { type: 'image', src, alt }, children) : null
+    case 'img':
+      const src = el.getAttribute('src')
+      const imageAlt = el.getAttribute('alt') ?? ''
+
+      if (!src) {
+        return null
+      }
+
+      const filename = src.split('/').reverse()[0]
+      const imageId = imagesMap.get(filename)
+
+      if (!imageId) {
+        return null
+      }
+
+      return jsx(
+        'element',
+        {
+          type: 'component-block',
+          component: 'image',
+          props: {
+            imageAlt,
+            image: { id: imageId },
+            imageRel: { id: imageId },
+          },
+          children: [{ type: 'component-inline-prop', children: [{ text: '' }] }],
+        },
+        children,
+      )
     default:
       return children
   }
