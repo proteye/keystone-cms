@@ -74,6 +74,7 @@ const imageUploader = (isUploaded: boolean) => css`
 const imagePreview = css`
   width: auto;
   height: auto;
+  max-width: 100%;
   cursor: pointer;
 `
 
