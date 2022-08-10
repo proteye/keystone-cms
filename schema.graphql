@@ -251,6 +251,7 @@ type Post {
   brief: String
   content: Post_content_Document
   image: Image
+  imageAlt: String
   status: String
   commentStatus: String
   order: Int
@@ -291,6 +292,7 @@ input PostWhereInput {
   slug: StringFilter
   brief: StringFilter
   image: ImageWhereInput
+  imageAlt: StringFilter
   status: StringNullableFilter
   commentStatus: StringNullableFilter
   order: IntNullableFilter
@@ -329,6 +331,7 @@ input PostOrderByInput {
   title: OrderDirection
   slug: OrderDirection
   brief: OrderDirection
+  imageAlt: OrderDirection
   status: OrderDirection
   commentStatus: OrderDirection
   order: OrderDirection
@@ -348,6 +351,7 @@ input PostUpdateInput {
   brief: String
   content: JSON
   image: ImageRelateToOneForUpdateInput
+  imageAlt: String
   status: String
   commentStatus: String
   order: Int
@@ -400,6 +404,7 @@ input PostCreateInput {
   brief: String
   content: JSON
   image: ImageRelateToOneForCreateInput
+  imageAlt: String
   status: String
   commentStatus: String
   order: Int
@@ -442,6 +447,7 @@ type Page {
   slug: String
   content: Page_content_Document
   image: Image
+  imageAlt: String
   status: String
   order: Int
   seoTitle: String
@@ -470,6 +476,7 @@ input PageWhereInput {
   title: StringFilter
   slug: StringFilter
   image: ImageWhereInput
+  imageAlt: StringFilter
   status: StringNullableFilter
   order: IntNullableFilter
   seoTitle: StringFilter
@@ -485,6 +492,7 @@ input PageOrderByInput {
   id: OrderDirection
   title: OrderDirection
   slug: OrderDirection
+  imageAlt: OrderDirection
   status: OrderDirection
   order: OrderDirection
   seoTitle: OrderDirection
@@ -500,6 +508,7 @@ input PageUpdateInput {
   slug: String
   content: JSON
   image: ImageRelateToOneForUpdateInput
+  imageAlt: String
   status: String
   order: Int
   seoTitle: String
@@ -521,6 +530,7 @@ input PageCreateInput {
   slug: String
   content: JSON
   image: ImageRelateToOneForCreateInput
+  imageAlt: String
   status: String
   order: Int
   seoTitle: String
@@ -538,6 +548,7 @@ type Category {
   slug: String
   description: String
   image: Image
+  imageAlt: String
   status: String
   order: Int
   seoTitle: String
@@ -575,6 +586,7 @@ input CategoryWhereInput {
   slug: StringFilter
   description: StringFilter
   image: ImageWhereInput
+  imageAlt: StringFilter
   status: StringNullableFilter
   order: IntNullableFilter
   seoTitle: StringFilter
@@ -591,6 +603,7 @@ input CategoryOrderByInput {
   name: OrderDirection
   slug: OrderDirection
   description: OrderDirection
+  imageAlt: OrderDirection
   status: OrderDirection
   order: OrderDirection
   seoTitle: OrderDirection
@@ -605,6 +618,7 @@ input CategoryUpdateInput {
   slug: String
   description: String
   image: ImageRelateToOneForUpdateInput
+  imageAlt: String
   status: String
   order: Int
   seoTitle: String
@@ -626,6 +640,7 @@ input CategoryCreateInput {
   slug: String
   description: String
   image: ImageRelateToOneForCreateInput
+  imageAlt: String
   status: String
   order: Int
   seoTitle: String
@@ -707,7 +722,6 @@ type Image {
   name: String
   type: String
   filename: String
-  altText: String
   image: ImageFieldOutput
 }
 
@@ -724,7 +738,6 @@ input ImageWhereInput {
   name: StringFilter
   type: StringFilter
   filename: StringNullableFilter
-  altText: StringFilter
 }
 
 input ImageOrderByInput {
@@ -732,14 +745,12 @@ input ImageOrderByInput {
   name: OrderDirection
   type: OrderDirection
   filename: OrderDirection
-  altText: OrderDirection
 }
 
 input ImageUpdateInput {
   name: String
   type: String
   filename: String
-  altText: String
   image: ImageFieldInput
 }
 
@@ -752,7 +763,6 @@ input ImageCreateInput {
   name: String
   type: String
   filename: String
-  altText: String
   image: ImageFieldInput
 }
 

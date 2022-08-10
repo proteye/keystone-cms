@@ -38,6 +38,7 @@ model Post {
   content        String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
   image          Image?    @relation("Post_image", fields: [imageId], references: [id])
   imageId        String?   @map("image")
+  imageAlt       String    @default("")
   status         String?   @default("draft")
   commentStatus  String?   @default("closed")
   order          Int?      @default(-1)
@@ -68,6 +69,7 @@ model Page {
   content        String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
   image          Image?    @relation("Page_image", fields: [imageId], references: [id])
   imageId        String?   @map("image")
+  imageAlt       String    @default("")
   status         String?   @default("draft")
   order          Int?      @default(-1)
   seoTitle       String    @default("")
@@ -91,6 +93,7 @@ model Category {
   description    String    @default("")
   image          Image?    @relation("Category_image", fields: [imageId], references: [id])
   imageId        String?   @map("image")
+  imageAlt       String    @default("")
   status         String?   @default("draft")
   order          Int?      @default(-1)
   seoTitle       String    @default("")
@@ -121,9 +124,8 @@ model Tag {
 model Image {
   id                  String     @id @default(cuid())
   name                String     @default("")
-  type                String     @default("")
+  type                String     @default("Document")
   filename            String?    @unique
-  altText             String     @default("")
   image_filesize      Int?
   image_extension     String?
   image_width         Int?

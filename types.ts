@@ -36,3 +36,11 @@ export interface IImageFieldInput {
   height?: number
   width?: number
 }
+
+export enum EImageType {
+  CATEGORY = 'Category',
+  PAGE = 'Page',
+  POST = 'Post',
+  // from document editor
+  DOCUMENT = 'Document',
+}

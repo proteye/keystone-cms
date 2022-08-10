@@ -15,7 +15,7 @@ import {
   timestampFields,
   viewsCountField,
 } from './fields'
-import { IImageFieldInput } from './types'
+import { EImageType, IImageFieldInput } from './types'
 
 /**
  * Lists
@@ -86,6 +86,7 @@ export const lists: Lists = {
       brief: text({ ui: { displayMode: 'textarea' } }),
       content: contentField,
       image: imageField,
+      imageAlt: imageAltField,
       status: statusField,
       commentStatus: select({
         options: [
@@ -135,6 +136,7 @@ export const lists: Lists = {
       slug: slugField,
       content: contentField,
       image: imageField,
+      imageAlt: imageAltField,
       status: statusField,
       order: orderField,
       ...seoFields,
@@ -155,6 +157,7 @@ export const lists: Lists = {
       slug: slugField,
       description: text({ ui: { displayMode: 'textarea' } }),
       image: imageField,
+      imageAlt: imageAltField,
       status: statusField,
       order: orderField,
       ...seoFields,
@@ -194,13 +197,13 @@ export const lists: Lists = {
   Image: list({
     fields: {
       name: text({ defaultValue: '' }),
-      type: text({ defaultValue: '' }),
+      // Category, Page, Post, Document (from document editor)
+      type: text({ defaultValue: EImageType.DOCUMENT }),
       filename: text({
         isIndexed: 'unique',
         db: { isNullable: true },
         ui: { createView: { fieldMode: 'hidden' }, itemView: { fieldMode: 'read' } },
       }),
-      altText: imageAltField,
       image: imageStorageField,
     },
     hooks: {
@@ -220,7 +223,7 @@ export const lists: Lists = {
     },
     ui: {
       listView: {
-        initialColumns: ['name', 'type', 'altText', 'image'],
+        initialColumns: ['name', 'type', 'image'],
       },
     },
   }),

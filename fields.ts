@@ -83,11 +83,11 @@ export const imageField = relationship({
   },
   ui: {
     displayMode: 'cards',
-    cardFields: ['altText', 'image'],
-    inlineEdit: { fields: ['altText', 'image'] },
+    cardFields: ['image'],
+    inlineEdit: { fields: ['image'] },
     linkToItem: true,
     inlineConnect: false,
-    inlineCreate: { fields: ['altText', 'image'] },
+    inlineCreate: { fields: ['image'] },
   },
 })
 
