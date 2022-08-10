@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import { BaseKeystoneTypeInfo, KeystoneContext } from '@keystone-6/core/types'
 import { Scalars } from '.keystone/types'
-import { IImageFieldInput } from '../types'
+import { EImageType, IImageFieldInput } from '../types'
 import { parseFilename } from './parseFilename'
 import { removeHtmlTags } from './removeHtmlTags'
 import { convertHtmlToDocument } from './convertHtmlToDocument'
@@ -30,6 +30,7 @@ type CategoryProps = {
   description: string
   status: 'draft' | 'published'
   image?: { id: string }
+  imageAlt?: string
   seoTitle?: string
   seoDescription?: string
   seoKeywords?: string
@@ -45,7 +46,6 @@ type ImageProps = {
   name: string
   type: string
   filename: string
-  altText: string
   image: IImageFieldInput
 }
 
@@ -59,6 +59,7 @@ type PageProps = {
   seoKeywords?: string
   viewsCount?: number
   image?: { id: string }
+  imageAlt?: string
   author?: { id: string }
 }
 
@@ -74,6 +75,7 @@ type PostProps = {
   seoKeywords?: string
   viewsCount?: number
   image?: { id: string }
+  imageAlt?: string
   author?: { id: string }
   category?: { id: string }
   tags?: { id: string }[]
@@ -259,7 +261,6 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
         name: id,
         type: 'Page',
         filename: imageOld.filename,
-        altText: page.imageAlt ?? '',
         image: { id, extension, filesize: imageOld.size },
       }
       addedImage = await createImage(context, preparedImage)
@@ -274,6 +275,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
       seoKeywords: page.seo.keywords,
       viewsCount: page.viewsCount,
       image: addedImage ? { id: addedImage.id } : undefined,
+      imageAlt: page.imageAlt ?? '',
       author: { id: addedUsers[0].id },
     }
     await createPage(context, preparedPage)
@@ -292,7 +294,6 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
         name: id,
         type: 'Post',
         filename: imageOld.filename,
-        altText: post.imageAlt ?? '',
         image: { id, extension, filesize: imageOld.size },
       }
       addedImage = await createImage(context, preparedImage)
@@ -321,6 +322,7 @@ export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeI
       seoKeywords: post.seo.keywords,
       viewsCount: post.viewsCount,
       image: addedImage ? { id: addedImage.id } : undefined,
+      imageAlt: post.imageAlt ?? '',
       author: author ? { id: author.id } : undefined,
       category: category ? { id: category.id } : undefined,
       tags: preparedTags,
@@ -392,19 +394,18 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
   console.log(`📂 Adding images...`)
   data = readFileSync(`${importDir}/image.json`, 'utf8')
   const images = JSON.parse(data)
-  const addedImages: { id: string; filename: string }[] = []
+  const addedImages: { id: string; filename: string; alt: string }[] = []
 
   for (const image of images) {
     const { filename: id, extension } = parseFilename(image.file)
     const preparedImage = {
       name: id,
-      type: 'Post',
+      type: EImageType.DOCUMENT,
       filename: image.file,
-      altText: image.alt ?? '',
       image: { id, extension, filesize: DEFAULT_SIZE },
     }
     const result = await createImage(context, preparedImage)
-    addedImages.push(result)
+    addedImages.push({ ...result, alt: image.alt ?? '' })
   }
 
   console.log(`📄 Adding pages...`)
