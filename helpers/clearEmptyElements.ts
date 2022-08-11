@@ -3,11 +3,11 @@ import { TAny } from '../types'
 
 export type TContentProps = { type: string; children: TAny }[] | null
 
-export const clearEmptyParagraphs = (content: TContentProps) =>
+export const clearEmptyElements = (content: TContentProps) =>
   content?.filter(
     ({ type, children }) =>
       !(
-        type === 'paragraph' &&
+        ['heading', 'paragraph'].includes(type) &&
         children.length === 1 &&
         !children[0].type &&
         (children[0].text === '' || children[0].text === '\n')

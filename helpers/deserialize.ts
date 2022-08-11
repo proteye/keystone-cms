@@ -75,10 +75,11 @@ export const deserialize = (el: TAny, markAttributes = {}, imagesMap: TImageMap 
 
   if (/^h[1-6]$/.test(tagName)) {
     const level = parseInt(tagName.replace('h', ''))
-    if (children?.[0]?.text) {
-      children[0].text = children[0].text.trim()
+    const preparedChildren = children.filter((item: TAny) => item !== '\n' && item !== null)
+    if (preparedChildren?.[0]?.text) {
+      preparedChildren[0].text = preparedChildren[0].text.replaceAll('\n', '').trim()
     }
-    return jsx('element', { type: BLOCK_TAGS[tagName as TBlockTagName], level }, children)
+    return jsx('element', { type: BLOCK_TAGS[tagName as TBlockTagName], level }, preparedChildren)
   }
 
   if (tagName === 'p') {
@@ -89,9 +90,6 @@ export const deserialize = (el: TAny, markAttributes = {}, imagesMap: TImageMap 
   }
 
   if (BLOCK_TAGS[tagName as TBlockTagName]) {
-    // if (tagName === 'p' && children.length === 1 && children[0]?.text) {
-    //   children[0].text = children[0].text.trim()
-    // }
     return jsx('element', { type: BLOCK_TAGS[tagName as TBlockTagName] }, children)
   }
 

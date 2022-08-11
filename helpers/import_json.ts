@@ -5,7 +5,7 @@ import { EImageType, IImageFieldInput } from '../types'
 import { parseFilename } from './parseFilename'
 import { removeHtmlTags } from './removeHtmlTags'
 import { convertHtmlToDocument } from './convertHtmlToDocument'
-import { clearEmptyParagraphs, TContentProps } from './clearEmptyParagraphs'
+import { clearEmptyElements, TContentProps } from './clearEmptyElements'
 
 const IMPORT_DIR = './import_data'
 
@@ -181,7 +181,7 @@ const createPage = async (context: KeystoneContext<BaseKeystoneTypeInfo>, pageDa
 const createPost = async (context: KeystoneContext<BaseKeystoneTypeInfo>, postData: PostProps) => {
   const post = await context.query.Post.findOne({
     where: { slug: postData.slug },
-    query: 'id slug content { document }',
+    query: 'id',
   })
 
   if (!post) {
@@ -197,14 +197,14 @@ const createPost = async (context: KeystoneContext<BaseKeystoneTypeInfo>, postDa
     })
   }
 
-  return post
+  return null
 }
 
 const updatePost = async (context: KeystoneContext<BaseKeystoneTypeInfo>, { id, content }: UpdatePostProps) => {
   return await context.query.Post.updateOne({
     where: { id },
     data: { content },
-    query: 'id slug content { document }',
+    query: 'id',
   })
 }
 
@@ -494,8 +494,10 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
     }
     const createdPost = await createPost(context, preparedPost)
     // clear content and update post
-    createdPost.content = clearEmptyParagraphs(createdPost.content.document as TContentProps)
-    await updatePost(context, createdPost as UpdatePostProps)
+    if (createdPost) {
+      createdPost.content = clearEmptyElements(createdPost.content.document as TContentProps)
+      await updatePost(context, createdPost as UpdatePostProps)
+    }
   }
 
   console.log(`✅ JSON-data inserted`)

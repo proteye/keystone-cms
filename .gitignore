@@ -3,6 +3,7 @@ node_modules
 keystone.db
 *.log
 *.db
+*.db-journal
 .env
 public/images
 .DS_Store
