@@ -75,6 +75,7 @@ export const lists: Lists = {
     ui: {
       listView: {
         initialColumns: ['name', 'email', 'isAdmin', 'status'],
+        initialSort: { field: 'createdAt', direction: 'ASC' },
       },
     },
   }),
@@ -125,7 +126,8 @@ export const lists: Lists = {
     },
     ui: {
       listView: {
-        initialColumns: ['title', 'slug', 'category', 'tags', 'author', 'viewsCount', 'status'],
+        initialColumns: ['title', 'slug', 'category', 'tags', 'viewsCount', 'status'],
+        initialSort: { field: 'updatedAt', direction: 'DESC' },
       },
     },
   }),
@@ -146,7 +148,8 @@ export const lists: Lists = {
     },
     ui: {
       listView: {
-        initialColumns: ['title', 'slug', 'author', 'viewsCount', 'status'],
+        initialColumns: ['title', 'slug', 'viewsCount', 'status'],
+        initialSort: { field: 'updatedAt', direction: 'DESC' },
       },
     },
   }),
@@ -168,6 +171,7 @@ export const lists: Lists = {
     ui: {
       listView: {
         initialColumns: ['name', 'slug', 'description', 'status'],
+        initialSort: { field: 'name', direction: 'ASC' },
       },
     },
   }),
@@ -190,6 +194,7 @@ export const lists: Lists = {
     ui: {
       listView: {
         initialColumns: ['name', 'slug', 'category'],
+        initialSort: { field: 'name', direction: 'ASC' },
       },
     },
   }),
@@ -224,6 +229,7 @@ export const lists: Lists = {
     ui: {
       listView: {
         initialColumns: ['name', 'type', 'image'],
+        initialSort: { field: 'name', direction: 'ASC' },
       },
     },
   }),
