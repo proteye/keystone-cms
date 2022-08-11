@@ -4,8 +4,8 @@
 import { jsx } from '@keystone-ui/core'
 import { FC } from 'react'
 import styles from './styles'
-import { IImageUploaderProps } from './types'
 import useBase from './useBase'
+import { IImageUploaderProps } from './types'
 
 export const ImageUploader: FC<IImageUploaderProps> = (props) => {
   const { altText, imageSrc, loading, isShowLabel, isShowImage, handleAltTextChange, handleUploadChange } =

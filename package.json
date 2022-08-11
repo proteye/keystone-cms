@@ -14,6 +14,7 @@
     "start": "keystone start",
     "build": "keystone build",
     "postinstall": "keystone postinstall",
+    "typecheck": "tsc --noEmit",
     "import-mongo": "keystone --import-mongo-json",
     "import-mysql": "keystone --import-mysql-json"
   },

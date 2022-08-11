@@ -2,7 +2,7 @@ import { config } from '@keystone-6/core'
 import { lists } from './schema'
 import { withAuth, session } from './auth'
 import { mainConfig } from './config'
-import { importMongoJson, importMysqlJson } from './helpers/import_json'
+import { importMongo, importMysql } from './helpers/importJson'
 import { transformFilename } from './helpers/transformFilename'
 
 export default withAuth(
@@ -12,10 +12,10 @@ export default withAuth(
       url: mainConfig.dbUrl,
       async onConnect(context) {
         if (process.argv.includes('--import-mongo-json')) {
-          await importMongoJson(context)
+          await importMongo(context)
         }
         if (process.argv.includes('--import-mysql-json')) {
-          await importMysqlJson(context)
+          await importMysql(context)
         }
       },
     },

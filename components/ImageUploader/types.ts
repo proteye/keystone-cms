@@ -1,12 +1,14 @@
 import { HydratedRelationshipData } from '@keystone-6/fields-document/dist/declarations/src/DocumentEditor/component-blocks/api'
-import { TImageFieldValue } from '../../types'
+import { TImageListData } from '../../types'
+
+export type TImageValue = TImageListData | null
 
 export interface IImageUploaderProps {
   listKey: string
-  defaultValue?: TImageFieldValue
+  defaultValue?: TImageValue
   imageAlt?: string
   mode?: 'edit' | 'preview'
-  onChange?(value: TImageFieldValue): void
+  onChange?(value: TImageValue): void
   onImageAltChange?(value: string): void
   onRelationChange?(value: HydratedRelationshipData): void
 }
