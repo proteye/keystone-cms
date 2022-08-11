@@ -5,6 +5,7 @@ import { EImageType, IImageFieldInput } from '../types'
 import { parseFilename } from './parseFilename'
 import { removeHtmlTags } from './removeHtmlTags'
 import { convertHtmlToDocument } from './convertHtmlToDocument'
+import { clearEmptyParagraphs, TContentProps } from './clearEmptyParagraphs'
 
 const IMPORT_DIR = './import_data'
 
@@ -52,7 +53,7 @@ type ImageProps = {
 type PageProps = {
   title: string
   slug: string
-  content: Scalars['JSON'] | null // [{"type":"paragraph","children":[{"text":""}]}]
+  content: Scalars['JSON'] | null
   status: 'draft' | 'published'
   seoTitle?: string
   seoDescription?: string
@@ -67,7 +68,7 @@ type PostProps = {
   title: string
   slug: string
   brief: string
-  content: Scalars['JSON'] | null // [{"type":"paragraph","children":[{"text":""}]}]
+  content: Scalars['JSON'] | null
   publishDate: string
   status: 'draft' | 'published'
   seoTitle?: string
@@ -79,6 +80,11 @@ type PostProps = {
   author?: { id: string }
   category?: { id: string }
   tags?: { id: string }[]
+}
+
+type UpdatePostProps = {
+  id: string
+  content: Scalars['JSON'] | null
 }
 
 const createUser = async (context: KeystoneContext<BaseKeystoneTypeInfo>, userData: UserProps) => {
@@ -142,7 +148,7 @@ const createImage = async (context: KeystoneContext<BaseKeystoneTypeInfo>, image
       image: undefined,
       image_id: imageProps.id,
       image_extension: imageProps.extension,
-      image_filesize: imageProps.filesize,
+      image_filesize: imageProps.filesize ?? DEFAULT_SIZE,
       image_width: imageProps.width ?? DEFAULT_WIDTH,
       image_height: imageProps.height ?? DEFAULT_HEIGHT,
     }
@@ -175,7 +181,7 @@ const createPage = async (context: KeystoneContext<BaseKeystoneTypeInfo>, pageDa
 const createPost = async (context: KeystoneContext<BaseKeystoneTypeInfo>, postData: PostProps) => {
   const post = await context.query.Post.findOne({
     where: { slug: postData.slug },
-    query: 'id slug',
+    query: 'id slug content { document }',
   })
 
   if (!post) {
@@ -187,11 +193,19 @@ const createPost = async (context: KeystoneContext<BaseKeystoneTypeInfo>, postDa
         category: postData.category ? { connect: { id: postData.category.id } } : undefined,
         tags: postData.tags ? { connect: postData.tags } : undefined,
       },
-      query: 'id slug',
+      query: 'id slug content { document }',
     })
   }
 
   return post
+}
+
+const updatePost = async (context: KeystoneContext<BaseKeystoneTypeInfo>, { id, content }: UpdatePostProps) => {
+  return await context.query.Post.updateOne({
+    where: { id },
+    data: { content },
+    query: 'id slug content { document }',
+  })
 }
 
 export const importMongoJson = async (context: KeystoneContext<BaseKeystoneTypeInfo>) => {
@@ -391,11 +405,10 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
     addedTags.push(result)
   }
 
-  console.log(`📂 Adding images...`)
+  console.log(`🖼 Adding images...`)
   data = readFileSync(`${importDir}/image.json`, 'utf8')
   const images = JSON.parse(data)
   const addedImages: { id: string; filename: string }[] = []
-  // const addedImagesMap: { [filename: string]: string } = {}
 
   for (const image of images) {
     const { name: id, extension } = parseFilename(image.file)
@@ -408,6 +421,7 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
     const result = await createImage(context, preparedImage)
     addedImages.push(result)
   }
+
   const addedImagesMap = new Map(addedImages.map(({ id, filename }) => [filename, id] as [string, string]))
 
   console.log(`📄 Adding pages...`)
@@ -429,54 +443,60 @@ export const importMysqlJson = async (context: KeystoneContext<BaseKeystoneTypeI
     await createPage(context, preparedPage)
   }
 
-  // console.log(`📝 Adding posts...`)
-  // data = readFileSync(`${importDir}/post.json`, 'utf8')
-  // const posts = JSON.parse(data)
+  console.log(`📝 Adding posts...`)
+  data = readFileSync(`${importDir}/post.json`, 'utf8')
+  const posts = JSON.parse(data)
 
-  // for (const post of posts) {
-  //   const imageOld = post.image
-  //   let addedImage = undefined
-  //   if (imageOld) {
-  //     const { filename: id, extension } = parseFilename(imageOld.filename)
-  //     const preparedImage = {
-  //       name: id,
-  //       type: 'Post',
-  //       filename: imageOld.filename,
-  //       altText: post.imageAlt ?? '',
-  //       image: { id, extension, filesize: imageOld.size },
-  //     }
-  //     addedImage = await createImage(context, preparedImage)
-  //   }
-  //   const authorOld = users.find((item: { _id: { $oid: string } }) => post.author.$oid === item._id.$oid)
-  //   const author = addedUsers.find(({ email }) => authorOld.email === email)
-  //   const categoryOld = categories.find((item: { _id: { $oid: string } }) => post.category.$oid === item._id.$oid)
-  //   const category = addedCategories.find(({ slug }) => categoryOld.slug === slug)
-  //   const tagsOld: { slug: string }[] = post.tags.map(({ $oid }: { $oid: string }) =>
-  //     tags.find((item: { _id: { $oid: string } }) => $oid === item._id.$oid),
-  //   )
-  //   const preparedTags = tagsOld.map(({ slug: slugOld }) => {
-  //     const tag = addedTags.find(({ slug }) => slugOld === slug)
-  //     return { id: tag?.id ?? '' }
-  //   })
+  data = readFileSync(`${importDir}/post_tag.json`, 'utf8')
+  const postTags: { post_id: number; tag_id: number }[] = JSON.parse(data)
 
-  //   const preparedPost: PostProps = {
-  //     title: post.title,
-  //     slug: post.slug,
-  //     brief: removeHtmlTags(post.content.brief),
-  //     content: convertHtmlToDocument(post.content.extended),
-  //     publishDate: new Date(post.publishedDate.$date).toISOString(),
-  //     status: 'published',
-  //     seoTitle: post.seo.title,
-  //     seoDescription: post.seo.description,
-  //     seoKeywords: post.seo.keywords,
-  //     viewsCount: post.viewsCount,
-  //     image: addedImage ? { id: addedImage.id } : undefined,
-  //     author: author ? { id: author.id } : undefined,
-  //     category: category ? { id: category.id } : undefined,
-  //     tags: preparedTags,
-  //   }
-  //   await createPost(context, preparedPost)
-  // }
+  for (const post of posts) {
+    const imageOld = post.image
+    let addedImage = undefined
+    if (imageOld) {
+      const { name: id, extension } = parseFilename(imageOld)
+      const preparedImage = {
+        name: id,
+        type: 'Post',
+        filename: imageOld,
+        image: { id, extension },
+      }
+      addedImage = await createImage(context, preparedImage)
+    }
+    const authorOld = users.find(({ id }: { id: number }) => post.created_by === id)
+    const author = addedUsers.find(({ email }) => authorOld.email === email)
+    const categoryOld = categories.find(({ id }: { id: number }) => post.category_id === id)
+    const category = addedCategories.find(({ slug }) => categoryOld.slug === slug)
+    const tagsOld: { slug: string }[] = postTags
+      .filter(({ post_id }) => post.id === post_id)
+      .map(({ tag_id }) => tags.find(({ id }: { id: number }) => tag_id === id))
+    const preparedTags = tagsOld.map(({ slug: slugOld }) => {
+      const tag = addedTags.find(({ slug }) => slugOld === slug)
+      return { id: tag?.id ?? '' }
+    })
+
+    const preparedPost: PostProps = {
+      title: post.title,
+      slug: post.slug,
+      brief: removeHtmlTags(post.quote),
+      content: convertHtmlToDocument(post.content, addedImagesMap),
+      publishDate: new Date(post.published_at * 1000).toISOString(),
+      status: post.status === 1 ? 'published' : 'draft',
+      seoTitle: post.meta_title,
+      seoDescription: post.meta_description,
+      seoKeywords: post.meta_keywords,
+      viewsCount: post.view_count,
+      image: addedImage ? { id: addedImage.id } : undefined,
+      imageAlt: post.image_alt ?? '',
+      author: author ? { id: author.id } : undefined,
+      category: category ? { id: category.id } : undefined,
+      tags: preparedTags,
+    }
+    const createdPost = await createPost(context, preparedPost)
+    // clear content and update post
+    createdPost.content = clearEmptyParagraphs(createdPost.content.document as TContentProps)
+    await updatePost(context, createdPost as UpdatePostProps)
+  }
 
   console.log(`✅ JSON-data inserted`)
   console.log(`👋 Please start the process with \`yarn dev\` or \`npm run dev\``)

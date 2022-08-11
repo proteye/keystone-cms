@@ -1,5 +1,6 @@
 import { jsx } from 'slate-hyperscript'
 import { TAny } from '../types'
+import { getFilenameFromPath } from './getFilenameFromPath'
 
 const Node = {
   ELEMENT_NODE: 1,
@@ -48,7 +49,9 @@ type TMarkTagName = keyof typeof MARK_TAGS
  * Deserialize DOM elements
  */
 export const deserialize = (el: TAny, markAttributes = {}, imagesMap: TImageMap = new Map()) => {
-  if (el.nodeType === Node.TEXT_NODE && el.parentNode.rawTagName !== 'body') {
+  const parentTagName = el.parentNode?.rawTagName?.toLowerCase()
+
+  if (el.nodeType === Node.TEXT_NODE && parentTagName !== 'body') {
     return !el.textContent.trim() ? null : jsx('text', markAttributes, el.textContent.trimStart())
   } else if (el.nodeType !== Node.ELEMENT_NODE) {
     return null
@@ -72,10 +75,23 @@ export const deserialize = (el: TAny, markAttributes = {}, imagesMap: TImageMap 
 
   if (/^h[1-6]$/.test(tagName)) {
     const level = parseInt(tagName.replace('h', ''))
+    if (children?.[0]?.text) {
+      children[0].text = children[0].text.trim()
+    }
     return jsx('element', { type: BLOCK_TAGS[tagName as TBlockTagName], level }, children)
   }
 
+  if (tagName === 'p') {
+    if (tagName === 'p' && children?.length === 1 && children[0]?.text) {
+      children[0].text = children[0].text.trim()
+    }
+    return jsx('element', { type: BLOCK_TAGS[tagName] }, children)
+  }
+
   if (BLOCK_TAGS[tagName as TBlockTagName]) {
+    // if (tagName === 'p' && children.length === 1 && children[0]?.text) {
+    //   children[0].text = children[0].text.trim()
+    // }
     return jsx('element', { type: BLOCK_TAGS[tagName as TBlockTagName] }, children)
   }
 
@@ -83,7 +99,7 @@ export const deserialize = (el: TAny, markAttributes = {}, imagesMap: TImageMap 
     case 'body':
       return jsx('fragment', {}, children)
     case 'br':
-      return '\n'
+      return parentTagName !== 'body' ? '\n' : null
     case 'a':
       const href = el.getAttribute('href')
       return href ? jsx('element', { type: 'link', href }, children) : null
@@ -95,7 +111,7 @@ export const deserialize = (el: TAny, markAttributes = {}, imagesMap: TImageMap 
         return null
       }
 
-      const filename = src.split('/').reverse()[0]
+      const filename = getFilenameFromPath(src)
       const imageId = imagesMap.get(filename)
 
       if (!imageId) {
