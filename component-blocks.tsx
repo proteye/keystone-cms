@@ -44,7 +44,9 @@ export const componentBlocks = {
             <iframe
               style={{
                 maxWidth: '100%',
-                width: fields.width.value ? `${fields.width.value}px` : 'auto',
+                width: fields.width.value
+                  ? `${fields.width.value}${fields.width.value.includes('%') ? '' : 'px'}`
+                  : 'auto',
                 height: fields.height.value ? `${fields.height.value}px` : '100%',
               }}
               src={fields.url.value}

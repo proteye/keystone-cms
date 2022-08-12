@@ -41,7 +41,7 @@ const MARK_TAGS = {
 }
 
 export type TImageMap = Map<string, string> // { filename: image_id }
-type TTagName = 'body' | 'br' | 'a' | 'img' | keyof typeof BLOCK_TAGS | keyof typeof MARK_TAGS
+type TTagName = 'body' | 'br' | 'a' | 'img' | 'iframe' | keyof typeof BLOCK_TAGS | keyof typeof MARK_TAGS
 type TBlockTagName = keyof typeof BLOCK_TAGS
 type TMarkTagName = keyof typeof MARK_TAGS
 
@@ -101,7 +101,7 @@ export const deserialize = (el: TAny, markAttributes = {}, imagesMap: TImageMap 
     case 'a':
       const href = el.getAttribute('href')
       return href ? jsx('element', { type: 'link', href }, children) : null
-    case 'img':
+    case 'img': {
       const src = el.getAttribute('src')
       const imageAlt = el.getAttribute('alt') ?? ''
 
@@ -130,6 +130,31 @@ export const deserialize = (el: TAny, markAttributes = {}, imagesMap: TImageMap 
         },
         children,
       )
+    }
+    case 'iframe': {
+      const url = el.getAttribute('src')
+      const width = el.getAttribute('width') ?? ''
+      const height = el.getAttribute('height') ?? ''
+
+      if (!url) {
+        return null
+      }
+
+      return jsx(
+        'element',
+        {
+          type: 'component-block',
+          component: 'youtube',
+          props: {
+            url,
+            width,
+            height,
+          },
+          children: [{ type: 'component-inline-prop', children: [{ text: '' }] }],
+        },
+        children,
+      )
+    }
     default:
       return children
   }
