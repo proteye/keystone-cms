@@ -841,7 +841,6 @@ input CreateInitialUserInput {
   name: String
   email: String
   password: String
-  isAdmin: Boolean
 }
 
 type Query {
