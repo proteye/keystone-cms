@@ -1,6 +1,6 @@
 {
   "name": "keystone-cms",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "CMS for article sites based on Keystone",
   "private": true,
   "author": "Ramil Zaynetdinov <me@proteye.ru>",
