@@ -2,6 +2,7 @@ import { integer, text, timestamp, select, image, relationship } from '@keystone
 import { document } from '@keystone-6/fields-document'
 import slugify from 'slugify'
 import { mainConfig } from './config'
+import { componentBlocks } from './component-blocks'
 
 export const slugField = text({
   defaultValue: '',
@@ -45,6 +46,10 @@ export const authorField = (ref: string) =>
     },
     hooks: {
       resolveInput: ({ resolvedData, fieldKey, operation, context }) => {
+        if (!context.session) {
+          return resolvedData[fieldKey]
+        }
+
         const { id, isAdmin } = context.session.data
 
         if (
@@ -60,7 +65,33 @@ export const authorField = (ref: string) =>
     },
   })
 
-export const imageField = image({ storage: mainConfig.storage.localImages })
+export const imageField = relationship({
+  ref: 'Image',
+  hooks: {
+    beforeOperation: async ({ resolvedData, listKey, context }) => {
+      const imageId = resolvedData?.image?.connect?.id
+
+      if (imageId) {
+        context.query.Image.updateOne({
+          where: { id: imageId },
+          data: {
+            type: listKey,
+          },
+        })
+      }
+    },
+  },
+  ui: {
+    displayMode: 'cards',
+    cardFields: ['image'],
+    inlineEdit: { fields: ['image'] },
+    linkToItem: true,
+    inlineConnect: false,
+    inlineCreate: { fields: ['image'] },
+  },
+})
+
+export const imageStorageField = image({ storage: mainConfig.storage.localImages })
 
 export const imageAltField = text({ defaultValue: '', validation: { length: { max: 255 } } })
 
@@ -77,6 +108,10 @@ export const contentField = document({
   ],
   links: true,
   dividers: true,
+  ui: {
+    views: require.resolve('./component-blocks'),
+  },
+  componentBlocks,
 })
 
 export const statusField = select({

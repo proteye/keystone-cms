@@ -7,6 +7,7 @@ import {
   contentField,
   imageAltField,
   imageField,
+  imageStorageField,
   orderField,
   seoFields,
   slugField,
@@ -14,6 +15,7 @@ import {
   timestampFields,
   viewsCountField,
 } from './fields'
+import { EImageType, IImageFieldInput } from './types'
 
 /**
  * Lists
@@ -48,7 +50,7 @@ export const lists: Lists = {
           update: isPerson,
         },
       }),
-      avatar: imageField,
+      avatar: imageStorageField,
       isAdmin: checkbox({
         defaultValue: false,
         access: {
@@ -73,6 +75,7 @@ export const lists: Lists = {
     ui: {
       listView: {
         initialColumns: ['name', 'email', 'isAdmin', 'status'],
+        initialSort: { field: 'createdAt', direction: 'ASC' },
       },
     },
   }),
@@ -123,7 +126,8 @@ export const lists: Lists = {
     },
     ui: {
       listView: {
-        initialColumns: ['title', 'slug', 'category', 'tags', 'author', 'viewsCount', 'status'],
+        initialColumns: ['title', 'slug', 'category', 'tags', 'viewsCount', 'status'],
+        initialSort: { field: 'updatedAt', direction: 'DESC' },
       },
     },
   }),
@@ -144,7 +148,8 @@ export const lists: Lists = {
     },
     ui: {
       listView: {
-        initialColumns: ['title', 'slug', 'author', 'viewsCount', 'status'],
+        initialColumns: ['title', 'slug', 'viewsCount', 'status'],
+        initialSort: { field: 'updatedAt', direction: 'DESC' },
       },
     },
   }),
@@ -166,6 +171,7 @@ export const lists: Lists = {
     ui: {
       listView: {
         initialColumns: ['name', 'slug', 'description', 'status'],
+        initialSort: { field: 'name', direction: 'ASC' },
       },
     },
   }),
@@ -188,6 +194,42 @@ export const lists: Lists = {
     ui: {
       listView: {
         initialColumns: ['name', 'slug', 'category'],
+        initialSort: { field: 'name', direction: 'ASC' },
+      },
+    },
+  }),
+  /** Image */
+  Image: list({
+    fields: {
+      name: text({ defaultValue: '' }),
+      // Category, Page, Post, Document (from document editor)
+      type: text({ defaultValue: EImageType.DOCUMENT }),
+      filename: text({
+        isIndexed: 'unique',
+        db: { isNullable: true },
+        ui: { createView: { fieldMode: 'hidden' }, itemView: { fieldMode: 'read' } },
+      }),
+      image: imageStorageField,
+    },
+    hooks: {
+      resolveInput: async ({ resolvedData, item }) => {
+        const { name, image } = resolvedData
+        const imageId = (image as IImageFieldInput).id ?? item?.image_id
+        const imageExt = (image as IImageFieldInput).extension ?? item?.image_extension
+        const origFilename = imageId ? imageId.split('-').slice(0, -1).join('-') : 'unknown'
+        const filename = imageId ? `${imageId}.${imageExt}` : null
+
+        if (name === '') {
+          return { ...resolvedData, name: origFilename || item?.name, filename: filename || item?.filename }
+        }
+
+        return { ...resolvedData, filename }
+      },
+    },
+    ui: {
+      listView: {
+        initialColumns: ['name', 'type', 'image'],
+        initialSort: { field: 'name', direction: 'ASC' },
       },
     },
   }),

@@ -250,7 +250,7 @@ type Post {
   slug: String
   brief: String
   content: Post_content_Document
-  image: ImageFieldOutput
+  image: Image
   imageAlt: String
   status: String
   commentStatus: String
@@ -291,6 +291,7 @@ input PostWhereInput {
   title: StringFilter
   slug: StringFilter
   brief: StringFilter
+  image: ImageWhereInput
   imageAlt: StringFilter
   status: StringNullableFilter
   commentStatus: StringNullableFilter
@@ -349,7 +350,7 @@ input PostUpdateInput {
   slug: String
   brief: String
   content: JSON
-  image: ImageFieldInput
+  image: ImageRelateToOneForUpdateInput
   imageAlt: String
   status: String
   commentStatus: String
@@ -365,6 +366,12 @@ input PostUpdateInput {
   author: UserRelateToOneForUpdateInput
   category: CategoryRelateToOneForUpdateInput
   tags: TagRelateToManyForUpdateInput
+}
+
+input ImageRelateToOneForUpdateInput {
+  create: ImageCreateInput
+  connect: ImageWhereUniqueInput
+  disconnect: Boolean
 }
 
 input UserRelateToOneForUpdateInput {
@@ -396,7 +403,7 @@ input PostCreateInput {
   slug: String
   brief: String
   content: JSON
-  image: ImageFieldInput
+  image: ImageRelateToOneForCreateInput
   imageAlt: String
   status: String
   commentStatus: String
@@ -412,6 +419,11 @@ input PostCreateInput {
   author: UserRelateToOneForCreateInput
   category: CategoryRelateToOneForCreateInput
   tags: TagRelateToManyForCreateInput
+}
+
+input ImageRelateToOneForCreateInput {
+  create: ImageCreateInput
+  connect: ImageWhereUniqueInput
 }
 
 input UserRelateToOneForCreateInput {
@@ -434,7 +446,7 @@ type Page {
   title: String
   slug: String
   content: Page_content_Document
-  image: ImageFieldOutput
+  image: Image
   imageAlt: String
   status: String
   order: Int
@@ -463,6 +475,7 @@ input PageWhereInput {
   id: IDFilter
   title: StringFilter
   slug: StringFilter
+  image: ImageWhereInput
   imageAlt: StringFilter
   status: StringNullableFilter
   order: IntNullableFilter
@@ -494,7 +507,7 @@ input PageUpdateInput {
   title: String
   slug: String
   content: JSON
-  image: ImageFieldInput
+  image: ImageRelateToOneForUpdateInput
   imageAlt: String
   status: String
   order: Int
@@ -516,7 +529,7 @@ input PageCreateInput {
   title: String
   slug: String
   content: JSON
-  image: ImageFieldInput
+  image: ImageRelateToOneForCreateInput
   imageAlt: String
   status: String
   order: Int
@@ -534,7 +547,7 @@ type Category {
   name: String
   slug: String
   description: String
-  image: ImageFieldOutput
+  image: Image
   imageAlt: String
   status: String
   order: Int
@@ -572,6 +585,7 @@ input CategoryWhereInput {
   name: StringFilter
   slug: StringFilter
   description: StringFilter
+  image: ImageWhereInput
   imageAlt: StringFilter
   status: StringNullableFilter
   order: IntNullableFilter
@@ -603,7 +617,7 @@ input CategoryUpdateInput {
   name: String
   slug: String
   description: String
-  image: ImageFieldInput
+  image: ImageRelateToOneForUpdateInput
   imageAlt: String
   status: String
   order: Int
@@ -625,7 +639,7 @@ input CategoryCreateInput {
   name: String
   slug: String
   description: String
-  image: ImageFieldInput
+  image: ImageRelateToOneForCreateInput
   imageAlt: String
   status: String
   order: Int
@@ -703,6 +717,55 @@ input TagCreateInput {
   posts: PostRelateToManyForCreateInput
 }
 
+type Image {
+  id: ID!
+  name: String
+  type: String
+  filename: String
+  image: ImageFieldOutput
+}
+
+input ImageWhereUniqueInput {
+  id: ID
+  filename: String
+}
+
+input ImageWhereInput {
+  AND: [ImageWhereInput!]
+  OR: [ImageWhereInput!]
+  NOT: [ImageWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  type: StringFilter
+  filename: StringNullableFilter
+}
+
+input ImageOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  type: OrderDirection
+  filename: OrderDirection
+}
+
+input ImageUpdateInput {
+  name: String
+  type: String
+  filename: String
+  image: ImageFieldInput
+}
+
+input ImageUpdateArgs {
+  where: ImageWhereUniqueInput!
+  data: ImageUpdateInput!
+}
+
+input ImageCreateInput {
+  name: String
+  type: String
+  filename: String
+  image: ImageFieldInput
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -745,6 +808,12 @@ type Mutation {
   updateTags(data: [TagUpdateArgs!]!): [Tag]
   deleteTag(where: TagWhereUniqueInput!): Tag
   deleteTags(where: [TagWhereUniqueInput!]!): [Tag]
+  createImage(data: ImageCreateInput!): Image
+  createImages(data: [ImageCreateInput!]!): [Image]
+  updateImage(where: ImageWhereUniqueInput!, data: ImageUpdateInput!): Image
+  updateImages(data: [ImageUpdateArgs!]!): [Image]
+  deleteImage(where: ImageWhereUniqueInput!): Image
+  deleteImages(where: [ImageWhereUniqueInput!]!): [Image]
   endSession: Boolean!
   authenticateUserWithPassword(
     email: String!
@@ -772,7 +841,6 @@ input CreateInitialUserInput {
   name: String
   email: String
   password: String
-  isAdmin: Boolean
 }
 
 type Query {
@@ -816,6 +884,14 @@ type Query {
   ): [Tag!]
   tag(where: TagWhereUniqueInput!): Tag
   tagsCount(where: TagWhereInput! = {}): Int
+  images(
+    where: ImageWhereInput! = {}
+    orderBy: [ImageOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Image!]
+  image(where: ImageWhereUniqueInput!): Image
+  imagesCount(where: ImageWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }

@@ -31,86 +31,80 @@ model User {
 }
 
 model Post {
-  id              String    @id @default(cuid())
-  title           String    @default("")
-  slug            String    @unique @default("")
-  brief           String    @default("")
-  content         String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
-  image_filesize  Int?
-  image_extension String?
-  image_width     Int?
-  image_height    Int?
-  image_id        String?
-  imageAlt        String    @default("")
-  status          String?   @default("draft")
-  commentStatus   String?   @default("closed")
-  order           Int?      @default(-1)
-  seoTitle        String    @default("")
-  seoDescription  String    @default("")
-  seoKeywords     String    @default("")
-  createdAt       DateTime? @default(now())
-  updatedAt       DateTime? @default(now()) @updatedAt
-  publishDate     DateTime? @default(now())
-  viewsCount      Int?      @default(0)
-  commentCount    Int?      @default(0)
-  author          User?     @relation("Post_author", fields: [authorId], references: [id])
-  authorId        String?   @map("author")
-  category        Category? @relation("Post_category", fields: [categoryId], references: [id])
-  categoryId      String?   @map("category")
-  tags            Tag[]     @relation("Post_tags")
+  id             String    @id @default(cuid())
+  title          String    @default("")
+  slug           String    @unique @default("")
+  brief          String    @default("")
+  content        String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
+  image          Image?    @relation("Post_image", fields: [imageId], references: [id])
+  imageId        String?   @map("image")
+  imageAlt       String    @default("")
+  status         String?   @default("draft")
+  commentStatus  String?   @default("closed")
+  order          Int?      @default(-1)
+  seoTitle       String    @default("")
+  seoDescription String    @default("")
+  seoKeywords    String    @default("")
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @default(now()) @updatedAt
+  publishDate    DateTime? @default(now())
+  viewsCount     Int?      @default(0)
+  commentCount   Int?      @default(0)
+  author         User?     @relation("Post_author", fields: [authorId], references: [id])
+  authorId       String?   @map("author")
+  category       Category? @relation("Post_category", fields: [categoryId], references: [id])
+  categoryId     String?   @map("category")
+  tags           Tag[]     @relation("Post_tags")
 
+  @@index([imageId])
   @@index([order])
   @@index([authorId])
   @@index([categoryId])
 }
 
 model Page {
-  id              String    @id @default(cuid())
-  title           String    @default("")
-  slug            String    @unique @default("")
-  content         String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
-  image_filesize  Int?
-  image_extension String?
-  image_width     Int?
-  image_height    Int?
-  image_id        String?
-  imageAlt        String    @default("")
-  status          String?   @default("draft")
-  order           Int?      @default(-1)
-  seoTitle        String    @default("")
-  seoDescription  String    @default("")
-  seoKeywords     String    @default("")
-  createdAt       DateTime? @default(now())
-  updatedAt       DateTime? @default(now()) @updatedAt
-  viewsCount      Int?      @default(0)
-  author          User?     @relation("Page_author", fields: [authorId], references: [id])
-  authorId        String?   @map("author")
+  id             String    @id @default(cuid())
+  title          String    @default("")
+  slug           String    @unique @default("")
+  content        String    @default("[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]")
+  image          Image?    @relation("Page_image", fields: [imageId], references: [id])
+  imageId        String?   @map("image")
+  imageAlt       String    @default("")
+  status         String?   @default("draft")
+  order          Int?      @default(-1)
+  seoTitle       String    @default("")
+  seoDescription String    @default("")
+  seoKeywords    String    @default("")
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @default(now()) @updatedAt
+  viewsCount     Int?      @default(0)
+  author         User?     @relation("Page_author", fields: [authorId], references: [id])
+  authorId       String?   @map("author")
 
+  @@index([imageId])
   @@index([order])
   @@index([authorId])
 }
 
 model Category {
-  id              String    @id @default(cuid())
-  name            String    @default("")
-  slug            String    @unique @default("")
-  description     String    @default("")
-  image_filesize  Int?
-  image_extension String?
-  image_width     Int?
-  image_height    Int?
-  image_id        String?
-  imageAlt        String    @default("")
-  status          String?   @default("draft")
-  order           Int?      @default(-1)
-  seoTitle        String    @default("")
-  seoDescription  String    @default("")
-  seoKeywords     String    @default("")
-  createdAt       DateTime? @default(now())
-  updatedAt       DateTime? @default(now()) @updatedAt
-  posts           Post[]    @relation("Post_category")
-  tags            Tag[]     @relation("Tag_category")
+  id             String    @id @default(cuid())
+  name           String    @default("")
+  slug           String    @unique @default("")
+  description    String    @default("")
+  image          Image?    @relation("Category_image", fields: [imageId], references: [id])
+  imageId        String?   @map("image")
+  imageAlt       String    @default("")
+  status         String?   @default("draft")
+  order          Int?      @default(-1)
+  seoTitle       String    @default("")
+  seoDescription String    @default("")
+  seoKeywords    String    @default("")
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @default(now()) @updatedAt
+  posts          Post[]    @relation("Post_category")
+  tags           Tag[]     @relation("Tag_category")
 
+  @@index([imageId])
   @@index([order])
 }
 
@@ -125,4 +119,19 @@ model Tag {
   posts      Post[]    @relation("Post_tags")
 
   @@index([categoryId])
+}
+
+model Image {
+  id                  String     @id @default(cuid())
+  name                String     @default("")
+  type                String     @default("Document")
+  filename            String?    @unique
+  image_filesize      Int?
+  image_extension     String?
+  image_width         Int?
+  image_height        Int?
+  image_id            String?
+  from_Post_image     Post[]     @relation("Post_image")
+  from_Page_image     Page[]     @relation("Page_image")
+  from_Category_image Category[] @relation("Category_image")
 }

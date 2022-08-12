@@ -2,7 +2,7 @@ import { Scalars } from '.keystone/types'
 
 export type TAny = any
 
-export interface Session {
+export interface ISession {
   data: {
     id: string
     name: string
@@ -10,7 +10,7 @@ export interface Session {
   }
 }
 
-export interface UserData {
+export interface IUserData {
   id: string
   name: string
   email: string
@@ -27,4 +27,19 @@ export interface IHookItemData {
   title?: string
   name?: string
   slug: string
+}
+
+export interface IImageFieldInput {
+  id?: string
+  extension?: string
+  filesize?: number
+  height?: number
+  width?: number
+}
+
+export enum EImageType {
+  CATEGORY = 'Category',
+  PAGE = 'Page',
+  POST = 'Post',
+  DOCUMENT = 'Document', // from document editor
 }
