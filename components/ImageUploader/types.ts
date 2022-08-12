@@ -1,5 +1,11 @@
 import { HydratedRelationshipData } from '@keystone-6/fields-document/dist/declarations/src/DocumentEditor/component-blocks/api'
-import { TImageListData } from '../../types'
+
+export type TImageListData = {
+  id?: string
+  image?: {
+    url?: string
+  }
+}
 
 export type TImageValue = TImageListData | null
 

@@ -37,21 +37,6 @@ export interface IImageFieldInput {
   width?: number
 }
 
-export type TImageListData = {
-  id?: string
-  name?: string
-  type?: string
-  filename?: string
-  image?: {
-    id?: string
-    extension?: string
-    filesize?: number
-    height?: number
-    width?: number
-    url?: string
-  }
-}
-
 export enum EImageType {
   CATEGORY = 'Category',
   PAGE = 'Page',

@@ -3,7 +3,7 @@ import { FormField } from '@keystone-6/fields-document/component-blocks'
 import { ImageUploader } from './components/ImageUploader'
 import { TImageValue } from './components/ImageUploader/types'
 
-export type TImageOptions = {
+type TImageOptions = {
   listKey: string
 }
 
