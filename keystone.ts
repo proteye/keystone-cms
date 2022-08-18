@@ -7,6 +7,11 @@ import { transformFilename } from './helpers/transformFilename'
 
 export default withAuth(
   config({
+    server: {
+      cors: { origin: ['http://localhost:7777'], credentials: true },
+      port: mainConfig.port,
+      maxFileSize: mainConfig.maxFileSize,
+    },
     db: {
       provider: 'sqlite',
       url: mainConfig.dbUrl,
