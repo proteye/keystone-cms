@@ -6,6 +6,7 @@ export const mainConfig = {
   port,
   baseUrl: process.env.ASSET_BASE_URL || `http://localhost:${port}`,
   dbUrl: process.env.DATABASE_URL || 'file:./keystone.db',
+  cors: { origin: ['http://localhost:3000', process.env.CORS_HOST], credentials: true },
   maxFileSize: process.env.MAX_FILE_SIZE ? +process.env.MAX_FILE_SIZE : 200 * 1024 * 1024, // or 200 Mb
   storage: {
     localImages: 'local_images',
