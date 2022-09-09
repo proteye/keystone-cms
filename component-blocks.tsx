@@ -27,7 +27,7 @@ export const componentBlocks = {
       imageRel: fields.relationship({
         listKey: 'Image',
         label: 'Image Relation',
-        selection: 'id, image { url }',
+        selection: 'id, image { width, height, url }',
       }),
       image: image({
         listKey: 'Image',
