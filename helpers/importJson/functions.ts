@@ -1,4 +1,7 @@
 import { BaseKeystoneTypeInfo, KeystoneContext } from '@keystone-6/core/types'
+import { ISize } from 'image-size/dist/types/interface'
+import { getFileSize } from '../getFileSize'
+import { getImageSize } from '../getImageSize'
 import { DEFAULT_HEIGHT, DEFAULT_PASSWORD, DEFAULT_SIZE, DEFAULT_WIDTH } from './constants'
 import { TCategoryProps, TImageProps, TPageProps, TPostProps, TTagProps, TUpdatePostProps, TUserProps } from './types'
 
@@ -57,15 +60,28 @@ export const createImage = async (context: KeystoneContext<BaseKeystoneTypeInfo>
   })
 
   if (!image) {
-    const { image: imageProps } = imageData
+    const { image: imageProps, filename } = imageData
+    const imageUrl = `public/images/${filename}`
+    let imageFilesize = DEFAULT_SIZE
+    let imageSize: ISize = { width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT }
+
+    try {
+      const fileSizeRes = getFileSize(imageUrl)
+      imageFilesize = fileSizeRes
+
+      const imageSizeRes = getImageSize(imageUrl)
+      imageSize = imageSizeRes
+    } catch {}
+
     const data = {
       ...imageData,
+      filename,
       image: undefined,
       image_id: imageProps.id,
       image_extension: imageProps.extension,
-      image_filesize: imageProps.filesize ?? DEFAULT_SIZE,
-      image_width: imageProps.width ?? DEFAULT_WIDTH,
-      image_height: imageProps.height ?? DEFAULT_HEIGHT,
+      image_filesize: imageFilesize,
+      image_width: imageSize.width,
+      image_height: imageSize.height,
     }
     return await context.prisma.image.create({ data })
   }

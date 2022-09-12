@@ -556,6 +556,7 @@ type Category {
   seoKeywords: String
   createdAt: DateTime
   updatedAt: DateTime
+  parent: Category
   posts(
     where: PostWhereInput! = {}
     orderBy: [PostOrderByInput!]! = []
@@ -594,6 +595,7 @@ input CategoryWhereInput {
   seoKeywords: StringFilter
   createdAt: DateTimeNullableFilter
   updatedAt: DateTimeNullableFilter
+  parent: CategoryWhereInput
   posts: PostManyRelationFilter
   tags: TagManyRelationFilter
 }
@@ -626,6 +628,7 @@ input CategoryUpdateInput {
   seoKeywords: String
   createdAt: DateTime
   updatedAt: DateTime
+  parent: CategoryRelateToOneForUpdateInput
   posts: PostRelateToManyForUpdateInput
   tags: TagRelateToManyForUpdateInput
 }
@@ -648,6 +651,7 @@ input CategoryCreateInput {
   seoKeywords: String
   createdAt: DateTime
   updatedAt: DateTime
+  parent: CategoryRelateToOneForCreateInput
   posts: PostRelateToManyForCreateInput
   tags: TagRelateToManyForCreateInput
 }

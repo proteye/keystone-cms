@@ -39,6 +39,10 @@ const importMysql = async (context: KeystoneContext<BaseKeystoneTypeInfo>) => {
   const addedCategories = []
 
   for (const category of categories) {
+    const categoryOld = category.parent_id
+      ? categories.find(({ id }: { id: number }) => category.parent_id === id)
+      : null
+    const parentCategory = categoryOld ? addedCategories.find(({ slug }) => categoryOld.slug === slug) : null
     const preparedCategory: TCategoryProps = {
       name: category.name,
       slug: category.slug,
@@ -47,6 +51,7 @@ const importMysql = async (context: KeystoneContext<BaseKeystoneTypeInfo>) => {
       seoTitle: category.meta_title,
       seoDescription: category.meta_description,
       seoKeywords: category.meta_keywords,
+      parent: parentCategory ? { connect: { id: parentCategory.id } } : undefined,
     }
     const result = await createCategory(context, preparedCategory)
     addedCategories.push(result)
@@ -73,11 +78,11 @@ const importMysql = async (context: KeystoneContext<BaseKeystoneTypeInfo>) => {
   const addedImages: { id: string; filename: string }[] = []
 
   for (const image of images) {
-    const { name: id, extension } = parseFilename(image.file)
+    const { name: id, extension, filename } = parseFilename(image.file)
     const preparedImage = {
       name: id,
       type: EImageType.DOCUMENT,
-      filename: image.file,
+      filename,
       image: { id, extension },
     }
     const result = await createImage(context, preparedImage)
@@ -116,11 +121,11 @@ const importMysql = async (context: KeystoneContext<BaseKeystoneTypeInfo>) => {
     const imageOld = post.image
     let addedImage = undefined
     if (imageOld) {
-      const { name: id, extension } = parseFilename(imageOld)
+      const { name: id, extension, filename } = parseFilename(imageOld)
       const preparedImage = {
         name: id,
         type: 'Post',
-        filename: imageOld,
+        filename,
         image: { id, extension },
       }
       addedImage = await createImage(context, preparedImage)

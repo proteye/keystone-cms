@@ -1,6 +1,6 @@
 {
   "name": "keystone-cms",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "CMS for article sites based on Keystone",
   "private": true,
   "author": "Ramil Zaynetdinov <me@proteye.ru>",
@@ -30,6 +30,7 @@
     "node": "^14.15 || ^16.13"
   },
   "devDependencies": {
+    "image-size": "^1.0.2",
     "node-html-parser": "^5.3.3",
     "slate-hyperscript": "^0.77.0"
   }

@@ -87,25 +87,29 @@ model Page {
 }
 
 model Category {
-  id             String    @id @default(cuid())
-  name           String    @default("")
-  slug           String    @unique @default("")
-  description    String    @default("")
-  image          Image?    @relation("Category_image", fields: [imageId], references: [id])
-  imageId        String?   @map("image")
-  imageAlt       String    @default("")
-  status         String?   @default("draft")
-  order          Int?      @default(-1)
-  seoTitle       String    @default("")
-  seoDescription String    @default("")
-  seoKeywords    String    @default("")
-  createdAt      DateTime? @default(now())
-  updatedAt      DateTime? @default(now()) @updatedAt
-  posts          Post[]    @relation("Post_category")
-  tags           Tag[]     @relation("Tag_category")
+  id                   String     @id @default(cuid())
+  name                 String     @default("")
+  slug                 String     @unique @default("")
+  description          String     @default("")
+  image                Image?     @relation("Category_image", fields: [imageId], references: [id])
+  imageId              String?    @map("image")
+  imageAlt             String     @default("")
+  status               String?    @default("draft")
+  order                Int?       @default(-1)
+  seoTitle             String     @default("")
+  seoDescription       String     @default("")
+  seoKeywords          String     @default("")
+  createdAt            DateTime?  @default(now())
+  updatedAt            DateTime?  @default(now()) @updatedAt
+  parent               Category?  @relation("Category_parent", fields: [parentId], references: [id])
+  parentId             String?    @map("parent")
+  posts                Post[]     @relation("Post_category")
+  tags                 Tag[]      @relation("Tag_category")
+  from_Category_parent Category[] @relation("Category_parent")
 
   @@index([imageId])
   @@index([order])
+  @@index([parentId])
 }
 
 model Tag {

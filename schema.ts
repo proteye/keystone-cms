@@ -165,6 +165,7 @@ export const lists: Lists = {
       order: orderField,
       ...seoFields,
       ...timestampFields,
+      parent: relationship({ ref: 'Category' }),
       posts: relationship({ ref: 'Post.category', many: true }),
       tags: relationship({ ref: 'Tag.category', many: true }),
     },
