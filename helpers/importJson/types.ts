@@ -22,6 +22,7 @@ export type TCategoryProps = {
   seoTitle?: string
   seoDescription?: string
   seoKeywords?: string
+  parent?: { connect: { id: string } }
 }
 
 export type TTagProps = {

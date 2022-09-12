@@ -41,6 +41,7 @@ const importMongo = async (context: KeystoneContext<BaseKeystoneTypeInfo>) => {
       status: 'published',
       seoTitle: category.seo.title,
       seoDescription: category.seo.description,
+      parent: undefined,
     }
     const result = await createCategory(context, preparedCategory)
     addedCategories.push(result)
