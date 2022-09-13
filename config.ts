@@ -11,5 +11,5 @@ export const mainConfig = {
   storage: {
     localImages: 'local_images',
   },
-  sessionMaxAge: process.env.ASSET_BASE_URL || 60 * 60 * 24 * 30, // or 30 days
+  sessionMaxAge: process.env.SESSION_MAX_AGE ? +process.env.SESSION_MAX_AGE : 60 * 60 * 24 * 30, // or 30 days
 }
